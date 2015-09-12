@@ -11,3 +11,7 @@ div {
 h1 {
     text-align: center;
 }
+canvas {
+    margin: auto;
+    padding: 0;
+}
