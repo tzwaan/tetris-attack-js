@@ -26,9 +26,10 @@ function preload() {
     game.load.spritesheet('block0', 'sprites/block_blue.png', 16, 16, 6);
     game.load.spritesheet('block1', 'sprites/block_yellow.png', 16, 16, 6);
     game.load.spritesheet('block2', 'sprites/block_green.png', 16, 16, 6);
+    game.load.spritesheet('block3', 'sprites/block_via.png', 16, 16, 6);
     game.load.spritesheet('cursor', 'sprites/cursor.png', 36, 20, 1);
     game.time.desiredFps = 20;
-    block_sprites = ['block0', 'block1', 'block2'];
+    block_sprites = ['block0', 'block1', 'block2', 'block3'];
 }
 function init_tower(width, height) {
     var main_tower = new Array(width);
@@ -172,6 +173,9 @@ function create() {
     main_tower = init_tower(tower_width, tower_height);
     main_tower = random_blocks(main_tower);
     main_tower[4][9] = create_block();
+    main_tower[4][10] = create_block();
+    main_tower[4][8] = create_block();
+    main_tower[4][7] = create_block();
     console.log(main_tower);
 
     cursor = create_cursor();
