@@ -85,6 +85,9 @@ function update_block(x, y) {
             main_tower[x][y].state = STATIC;
         }
     }
+    else if (main_tower[x][y].state == SWAP) {
+        main_tower[x][y].state = STATIC;
+    }
 }
 function sync_sprites() {
     /* Sets the locations of the sprites to
