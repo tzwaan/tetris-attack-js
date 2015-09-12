@@ -1,0 +1,13 @@
+body {
+    margin: auto;
+    width: auto;
+    padding: 0;
+}
+div {
+    width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+h1 {
+    text-align: center;
+}
