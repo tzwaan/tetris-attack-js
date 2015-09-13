@@ -28,6 +28,10 @@ function Block() {
     /* Informational functions */
     this.isSwappable = function() {
         console.log(this.counter);
+        if (!this.above)
+            return this.counter == 0;
+        if (this.above.state == HANG)
+            return false;
         return this.counter == 0;
     }
 
