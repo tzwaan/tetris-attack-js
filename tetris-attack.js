@@ -44,16 +44,24 @@ function loadSprites(block_names, cursor_names) {
 function preload() {
     loadSprites(BLOCK_SPRITES, CURSOR_SPRITES);
     GLOBAL.game.time.desiredFps = 20;
-    available_blocks = ['block0', 'block1', 'block2', 'block3'];
 }
 function create() {
     cursor_controller = GLOBAL.game.input.keyboard.createCursorKeys();
     cursor_controller.space = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
     var game = new TaGame();
-    console.log(game);
+    // make sure the cursor is always on top:
+    GLOBAL.block_layer = GLOBAL.game.add.group();
+    GLOBAL.cursor_layer = GLOBAL.game.add.group();
+
     game.newGame(6, 12, GLOBAL.nrBlockSprites);
     console.log(game);
+    game.blocks[4][9].newBlock();
+    game.blocks[4][8].newBlock();
+    game.blocks[4][10].newBlock();
+
+
+    GLOBAL.taGame_list[0] = game;
 
     /*
     cursor_controller.left.onDown.add(move_left);
@@ -64,4 +72,9 @@ function create() {
     */
 }
 function update() {
+    game = GLOBAL.taGame_list[0];
+
+    game.tick();
+
+    game.render();
 }

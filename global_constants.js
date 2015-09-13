@@ -13,4 +13,8 @@ const CURSOR_SPRITES = [
 ]
 const GLOBAL = {game: null,
                 nrBlockSprites: 0,
-                nrCursorSprites: 0}
+                nrCursorSprites: 0,
+                taGame_list: [
+                ],
+                block_layer: 0,
+                cursor_layer: 0}

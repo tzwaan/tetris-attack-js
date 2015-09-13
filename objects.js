@@ -9,7 +9,7 @@ const CLEAR = 4
 /* Timing */
 const HANGTIME = 6;
 const FALLTIME = 4;
-const SWAPTIME = 4;
+const SWAPTIME = 0;
 const CLEARTIME = 12;
 
 function Block() {
@@ -20,13 +20,15 @@ function Block() {
     this.under = null;
     this.left = null;
     this.right = null;
-    this.counter = null;
+    this.counter = 0;
     this.chain = null;
     this.is_cursor = null;
     this.sprite = null;
 
     /* Informational functions */
     this.isSwappable = function() {
+        console.log(this.counter);
+        return this.counter == 0;
     }
 
     this.isEmpty = function() {
@@ -66,8 +68,9 @@ function Block() {
         if (this.sprite) {
             this.erase();
         }
-        this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+rand, 0);
+        this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+sprite_nr, 0);
         this.sprite.scale.setTo(SCALE, SCALE);
+        GLOBAL.block_layer.add(this.sprite);
     }
 
     this.clear = function() {
@@ -92,15 +95,87 @@ function Block() {
         switch (this.state) {
             case STATIC:
             case SWAP:
+                if (!this.sprite) {
+                    return;
+                }
+                else if (!this.under) {
+                    this.state = STATIC;
+                }
+                else if (this.under.state == HANG) {
+                    this.state = HANG;
+                    this.counter = this.under.counter;
+                    this.chain = this.under.chain;
+                }
+                else if (this.under.isEmpty()) {
+                    this.state = HANG;
+                    this.counter = HANGTIME;
+                }
                 break;
             case HANG:
+                this.state = FALL;
             case FALL:
+                if (this.under.isEmpty()) {
+                    this.fall();
+                }
+                else if (this.under.state == CLEAR) {
+                    this.state = STATIC;
+                }
+                else {
+                    this.state = this.under.state;
+                    this.counter = this.under.counter;
+                }
                 break;
             case CLEAR:
+                this.erase();
+                this.counter = CLEARTIME;
                 break;
             default:
                 console.log("Unknown block state!");
         }
+    }
+
+    this.fall = function() {
+        this.under.state = this.state;
+        this.under.counter = this.counter;
+        this.under.sprite = this.sprite;
+        this.under.chain = this.chain;
+
+        this.state = STATIC;
+        this.counter = 0;
+        this.sprite = null;
+        this.chain = null;
+    }
+
+    this.swap = function() {
+        var temp_sprite = this.right.sprite;
+        var temp_chain = this.right.chain;
+
+        this.right.sprite = this.sprite;
+        this.right.chain = this.chain;
+
+        this.sprite = temp_sprite;
+        this.chain = temp_chain;
+
+        if (this.sprite == null) {
+            console.log('sprite is null');
+            this.state = STATIC;
+            this.counter = 0;
+        }
+        else {
+            this.state = SWAP;
+            this.counter = SWAPTIME;
+        }
+
+        if (this.right.sprite == null) {
+            console.log('sprite is null');
+            this.right.state = STATIC;
+            this.right.counter = 0;
+        }
+        else {
+            this.right.state = SWAP;
+            this.right.counter = SWAPTIME;
+        }
+
     }
 
     this.erase = function() {
@@ -123,8 +198,8 @@ function TaGame() {
     this.chain = null;
     this.blocks = null;
     this.config = null;
-    this.swap = null;
     this.command = null;
+    this.cursor = null;
 
     /* Create a new blocks array and fill it with the old shifted 1 up */
     this.push = function(height) {
@@ -161,8 +236,12 @@ function TaGame() {
         this.height = height;
         this.nr_blocks = nr_blocks;
         this.blocks = this.newBlocks(width, height);
-        this.swap = null; // not done
         this.command = null; // not done
+        this.cursor = new Cursor();
+        this.cursor.init(this);
+
+        this.updateNeighbors();
+        this.render();
     }
 
     this.updateNeighbors = function() {
@@ -218,34 +297,50 @@ function TaGame() {
     }
 
     this.swap = function(x, y) {
+        console.log("game.swap call");
         if (!this.blocks[x][y].isSwappable()
             || !this.blocks[x+1][y].isSwappable())
             return;
-        var temp;
-
-        temp = this.blocks[x][y];
-        this.blocks[x][y] = this.blocks[x+1][y];
-        this.blocks[x+1][y] = temp;
+        console.log("game.swap swapping");
+        this.blocks[x][y].swap();
     }
 
     this.tick = function() {
         this.updateNeighbors();
         this.updateState();
-        var combo = this.updateCombo();
+        //var combo = this.updateCombo();
 
-        // TODO this is incorrect at the moment
+        /* TODO this is incorrect at the moment
         if (combo > 0) {
             this.chain++;
         } else {
             this.chain = 1;
         }
+        */
         // spawn garbage
+
+
+        this.render();
+    }
+
+    this.render = function() {
+        for (var x=0; x<this.width; x++) {
+            for (var y=0; y<this.height; y++) {
+                if (this.blocks[x][y].sprite) {
+                    this.blocks[x][y].sprite.x = x*16*SCALE;
+                    this.blocks[x][y].sprite.y = this.height*16*SCALE - (y+1)*16*SCALE;
+                }
+            }
+        }
+        this.cursor.sprite.x = this.cursor.x*16*SCALE - (2*SCALE);
+        this.cursor.sprite.y = this.height*16*SCALE - (this.cursor.y+1)*16*SCALE - (2*SCALE);
     }
 }
 
 
 /* The Cursor object */
 function Cursor() {
+    this.mySelf = this;
     this.x = null;
     this.y = null;
     this.left = null;
@@ -257,16 +352,25 @@ function Cursor() {
 
     this.init = function(game) {
         this.game = game;
-        this.x = Math.floor(game.width / 2);
+        // center the cursor
+        this.x = Math.floor(game.width / 2) - 1;
         this.y = Math.floor(game.height / 3);
 
         this.left = game.blocks[this.x][this.y];
         this.right = game.blocks[this.x+1][this.y];
 
-        this.sprite = game.add.sprite(0, 0, 'cursor', 0);
-        this.sprite.scale.setT0(SCALE, SCALE);
+        this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
+        this.sprite.scale.setTo(SCALE, SCALE);
+        GLOBAL.cursor_layer.add(this.sprite);
 
-        this.controller = game.input.keyboard.createCursorKeys();
+        this.controller = GLOBAL.game.input.keyboard.createCursorKeys();
+        this.controller.space = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        this.controller.left.onDown.add(this.mv_left, this);
+        this.controller.right.onDown.add(this.mv_right, this);
+        this.controller.down.onDown.add(this.mv_down, this);
+        this.controller.up.onDown.add(this.mv_up, this);
+        this.controller.space.onDown.add(this.mv_swap, this);
     }
 
     this.mv_left = function() {
@@ -274,24 +378,25 @@ function Cursor() {
             this.x--;
     }
 
-    this.mv_right = function() {
+    this.mv_right = function(cursor) {
         if (this.x < this.game.width-2)
             this.x++;
     }
 
-    this.mv_down = function() {
+    this.mv_down = function(cursor) {
         if (this.y > 0) {
             this.y--;
         }
     }
 
-    this.mv_up = function() {
+    this.mv_up = function(cursor) {
         if (this.y < this.game.height-1) {
             this.y++;
         }
     }
 
     this.mv_swap = function() {
+        console.log(this.game);
         this.game.swap(this.x, this.y);
     }
 }
