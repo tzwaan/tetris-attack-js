@@ -13,52 +13,52 @@ const SWAPTIME = 4;
 const CLEARTIME = 12;
 
 function Block() {
-    var x = null;
-    var y = null;
-    var state = null;
-    var above = null;
-    var under = null;
-    var left = null;
-    var right = null;
-    var counter = null;
-    var chain = null;
-    var is_cursor = null;
-    var sprite = null;
+    this.x = null;
+    this.y = null;
+    this.state = null;
+    this.above = null;
+    this.under = null;
+    this.left = null;
+    this.right = null;
+    this.counter = null;
+    this.chain = null;
+    this.is_cursor = null;
+    this.sprite = null;
 
     /* Informational functions */
-    var isSwappable = function() {
+    this.isSwappable = function() {
     }
 
-    var isEmpty = function() {
+    this.isEmpty = function() {
         return this.counter == 0
             && this.sprite == null;
     }
 
-    var isSupport = function() {
+    this.isSupport = function() {
         return this.state != FALL;
     }
 
-    var isClearable = function() {
+    this.isClearable = function() {
         return this.isSwappable()
             && this.under != null
             && this.under.isSupport()
             && this.sprite != null;
     }
 
-    var isComboable = function() {
+    this.isComboable = function() {
         return this.isClearable()
             || (this.state == CLEAR
                 && this.counter == CLEARTIME)
     }
 
     /* Active functions */
-    var init = function(x, y) {
+    this.init = function(x, y) {
         this.x = x;
         this.y = y;
         this.state = STATIC;
     }
 
-    var newBlock = function(sprite_nr) {
+    this.newBlock = function(sprite_nr) {
         if (sprite_nr === undefined) {
             sprite_nr = Math.floor(Math.random() * GLOBAL.nrBlockSprites)
         }
@@ -70,7 +70,7 @@ function Block() {
         this.sprite.scale.setTo(SCALE, SCALE);
     }
 
-    var clear = function() {
+    this.clear = function() {
         if (this.state == CLEAR)
             return false;
 
@@ -80,7 +80,7 @@ function Block() {
         return true;
     }
 
-    var updateState = function() {
+    this.updateState = function() {
         /* If the block has a counter, decrement it, return if it is not done*/
         if (this.counter > 0) {
             this.counter--;
@@ -103,7 +103,7 @@ function Block() {
         }
     }
 
-    var erase = function() {
+    this.erase = function() {
         this.sprite.destroy();
         this.sprite = null;
         this.state = STATIC;

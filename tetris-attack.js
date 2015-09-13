@@ -50,9 +50,10 @@ function create() {
     cursor_controller = GLOBAL.game.input.keyboard.createCursorKeys();
     cursor_controller.space = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
-    var game = TaGame();
+    var game = new TaGame();
     console.log(game);
     game.newGame(6, 12, GLOBAL.nrBlockSprites);
+    console.log(game);
 
     /*
     cursor_controller.left.onDown.add(move_left);
