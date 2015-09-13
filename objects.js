@@ -56,8 +56,16 @@ function Block() {
         this.x = x;
         this.y = y;
         this.state = STATIC;
+    }
 
-        var nr = Math.floor(Math.random() * GLOBAL.nrBlockSprites)
+    var newBlock = function(sprite_nr) {
+        if (sprite_nr === undefined) {
+            sprite_nr = Math.floor(Math.random() * GLOBAL.nrBlockSprites)
+        }
+        /* Check if there is no other sprite, otherwise it will stay onscreen*/
+        if (this.sprite) {
+            this.erase();
+        }
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+rand, 0);
         this.sprite.scale.setTo(SCALE, SCALE);
     }
@@ -108,18 +116,18 @@ function Block() {
 /* The Tetris Attack Game object */
 
 function TaGame() {
-    var width = null;
-    var height = null;
-    var nr_blocks = null;
-    var combo = null;
-    var chain = null;
-    var blocks = null;
-    var config = null;
-    var swap = null;
-    var command = null;
+    this.width = null;
+    this.height = null;
+    this.nr_blocks = null;
+    this.combo = null;
+    this.chain = null;
+    this.blocks = null;
+    this.config = null;
+    this.swap = null;
+    this.command = null;
 
     /* Create a new blocks array and fill it with the old shifted 1 up */
-    var push = function(height) {
+    this.push = function(height) {
         var blocks = this.newBlocks(this.width, height);
         for (var i=0; i<this.width; i++) {
             for (var j=0; j<this.height; j++) {
@@ -129,13 +137,18 @@ function TaGame() {
     }
 
     /* Create a new array of blocks with one extra for spawning blocks */
-    var newBlocks = function(width, height) {
+    this.newBlocks = function(width, height) {
         var blocks = new Array(width);
         for (var x=0; x<width; x++) {
             blocks[x] = new Array(height);
             for (var y=0; y<height; y++) {
                 blocks[x][y] = new Block();
                 blocks[x][y].init();
+
+                //temp testing code
+                if (y<4) {
+                    blocks[x][y].newBlock();
+                }
             }
         }
         return blocks;
@@ -143,7 +156,7 @@ function TaGame() {
 
     /* Initialize new game with a viewport of x * y and given amount of
      * different blocks */
-    var newGame = function(width, height, nr_blocks) {
+    this.newGame = function(width, height, nr_blocks) {
         this.width = width;
         this.height = height;
         this.nr_blocks = nr_blocks;
@@ -152,7 +165,7 @@ function TaGame() {
         this.command = null; // not done
     }
 
-    var updateNeighbors = function() {
+    this.updateNeighbors = function() {
         var block;
         for (var x = 0; x<this.width; x++) {
             for (var y = 0; y<this.height; y++) {
@@ -185,7 +198,7 @@ function TaGame() {
         }
     }
 
-    var updateState = function() {
+    this.updateState = function() {
         for (var x = 0; x < this.width; x++) {
             for (var y = 0; y < this.height; y++) {
                 this.blocks[x][y].updateState();
@@ -193,7 +206,7 @@ function TaGame() {
         }
     }
 
-    var updateCombo = function() {
+    this.updateCombo = function() {
         var combo = 0;
 
         for (var x = 0; x < this.width; x++) {
@@ -204,7 +217,7 @@ function TaGame() {
         return combo;
     }
 
-    var swap = function(x, y) {
+    this.swap = function(x, y) {
         if (!this.blocks[x][y].isSwappable()
             || !this.blocks[x+1][y].isSwappable())
             return;
@@ -215,7 +228,7 @@ function TaGame() {
         this.blocks[x+1][y] = temp;
     }
 
-    var tick = function() {
+    this.tick = function() {
         this.updateNeighbors();
         this.updateState();
         var combo = this.updateCombo();
@@ -233,16 +246,16 @@ function TaGame() {
 
 /* The Cursor object */
 function Cursor() {
-    var x = null;
-    var y = null;
-    var left = null;
-    var right = null;
+    this.x = null;
+    this.y = null;
+    this.left = null;
+    this.right = null;
 
-    var sprite = null;
-    var game = null;
-    var controller = null;
+    this.sprite = null;
+    this.game = null;
+    this.controller = null;
 
-    var init = function(game) {
+    this.init = function(game) {
         this.game = game;
         this.x = Math.floor(game.width / 2);
         this.y = Math.floor(game.height / 3);
@@ -256,29 +269,29 @@ function Cursor() {
         this.controller = game.input.keyboard.createCursorKeys();
     }
 
-    var mv_left = function() {
+    this.mv_left = function() {
         if (this.x > 0)
             this.x--;
     }
 
-    var mv_right = function() {
+    this.mv_right = function() {
         if (this.x < this.game.width-2)
             this.x++;
     }
 
-    var mv_down = function() {
+    this.mv_down = function() {
         if (this.y > 0) {
             this.y--;
         }
     }
 
-    var mv_up = function() {
+    this.mv_up = function() {
         if (this.y < this.game.height-1) {
             this.y++;
         }
     }
 
-    var mv_swap = function() {
+    this.mv_swap = function() {
         this.game.swap(this.x, this.y);
     }
 }
