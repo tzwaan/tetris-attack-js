@@ -1,36 +1,21 @@
+/* The main wall variable */
+var wall = null;
 
-var tower_width = 6;
-var tower_height = 12;
+/* old */
 var main_tower = null;
 var cursor = null;
-var block_sprites = null;
+var available_blocks = null;
 
 /* constants
  */
 const SCALE = 2;
-const HANGTIME = 4;
-
-/* States
- */
-const STATIC = 0;
-const HANG = 1
-const FALL = 2
-const SWAP = 3
-const CLEAR = 4
+const tower_width = 6;
+const tower_height = 12;
 
 var game = new Phaser.Game(16*SCALE*tower_width, 16*SCALE*tower_height, Phaser.AUTO, 'wrapper', { preload: preload, create: create, update: update});
 
 
 
-function preload() {
-    game.load.spritesheet('block0', 'sprites/block_blue.png', 16, 16, 6);
-    game.load.spritesheet('block1', 'sprites/block_yellow.png', 16, 16, 6);
-    game.load.spritesheet('block2', 'sprites/block_green.png', 16, 16, 6);
-    game.load.spritesheet('block3', 'sprites/block_via.png', 16, 16, 6);
-    game.load.spritesheet('cursor', 'sprites/cursor.png', 36, 20, 1);
-    game.time.desiredFps = 20;
-    block_sprites = ['block0', 'block1', 'block2', 'block3'];
-}
 function init_tower(width, height) {
     var main_tower = new Array(width);
     for (var x=0; x<width; x++) {
@@ -54,27 +39,40 @@ function update_blocks() {
     for (var x=0; x<tower_width; x++) {
         for (var y=0; y<tower_height; y++) {
             if (main_tower[x][y] != null) {
-                update_block(x, y);
+                update_block(main_tower[x][y]);
             }
         }
     }
 }
-function update_block(x, y) {
-    if (main_tower[x][y].state == STATIC) {
-        if (y!=0) {
-            if (main_tower[x][y-1] == null) {
-                main_tower[x][y].state = HANG;
-                main_tower[x][y].hang_timer = HANGTIME;
+function update_block(block) {
+    var under = block.under();
+    if (block.state == STATIC) {
+        if (!block.onBottom()) {
+            if (!under) {
+                block.state = HANG;
+                block.hang_timer = HANGTIME;
+            }
+            else if (under.state == HANG) {
+                block.state = HANG;
+                block.hang_timer = HANGTIME;
             }
         }
     }
-    else if (main_tower[x][y].state == HANG) {
-        if (main_tower[x][y-1] == null &&
-                main_tower[x][y].hang_timer == 0) {
-            main_tower[x][y].state = FALL;
+    else if (block.state == HANG) {
+        if (block.hang_timer <= 0) {
+            block.state = FALL;
         }
         else {
-            main_tower[x][y].hang_timer--;
+            block.hang_timer--;
+        }
+    }
+    else if (block.state == FALL) {
+        if (!block.onBottom()) {
+            if (!under) {
+                main_tower[block.grid.x][block.grid.y] = null;
+                block.grid.y = block.grid.y-1;
+                main_tower[block.grid.x][block.grid.y] = block;
+            }
         }
     }
     else if (main_tower[x][y].state == FALL) {
@@ -98,7 +96,9 @@ function sync_sprites() {
         for (var y=0; y<tower_height; y++) {
             if (main_tower[x][y] != null) {
                 main_tower[x][y].x = 16*SCALE*x;
+                main_tower[x][y].grid.x = x;
                 main_tower[x][y].y = height - 16*SCALE* (y + 1);
+                main_tower[x][y].grid.y = y;
             }
         }
     }
@@ -107,11 +107,29 @@ function sync_sprites() {
 }
 function create_block() {
     /* create a random block from the available sprites */
-    var rand = block_sprites[Math.floor(Math.random() * block_sprites.length)];
+    var rand = available_blocks[Math.floor(Math.random() * available_blocks.length)];
     block = game.add.sprite(0, 0, rand, 0);
+    /* Add the grid location to the block */
+    block.grid = {};
+    block.grid.x = 0;
+    block.grid.y = 0;
     block.scale.setTo(SCALE, SCALE);
     block.state = STATIC;
     block.animations.add('land', [2, 3, 4], 10, true);
+    block.onBottom = function() {
+        if (this.grid.y == 0)
+            return true;
+        return false;
+    }
+    block.under = function() {
+        if (this.onBottom)
+            return false;
+        var under = main_tower[this.grid.x][this.grid.y-1];
+        if (under != null) {
+            return under;
+        }
+        return false;
+    }
     return block;
 }
 function create_cursor() {
@@ -168,6 +186,17 @@ function move_switch() {
             main_tower[cursor.grid.x+1][cursor.grid.y] = block1;
         }
     }
+}
+
+/* Phaser functions */
+function preload() {
+    game.load.spritesheet('block0', 'sprites/block_blue.png', 16, 16, 6);
+    game.load.spritesheet('block1', 'sprites/block_yellow.png', 16, 16, 6);
+    game.load.spritesheet('block2', 'sprites/block_green.png', 16, 16, 6);
+    game.load.spritesheet('block3', 'sprites/block_via.png', 16, 16, 6);
+    game.load.spritesheet('cursor', 'sprites/cursor.png', 36, 20, 1);
+    game.time.desiredFps = 20;
+    available_blocks = ['block0', 'block1', 'block2', 'block3'];
 }
 function create() {
     main_tower = init_tower(tower_width, tower_height);
