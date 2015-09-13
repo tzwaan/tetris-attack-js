@@ -13,3 +13,9 @@ Tetris Attack JS is currently in development.
 
 A mostly up-to-date version can be played here:
 [tetris-attack-js](http://tzwaan.com/tetris-attack)
+
+## Sprites
+
+In the sprite section are some custom blocks that I made about 2 years ago based
+on different social media logos. Some of these are out of date since either
+the logos have changed, or the media stopped existing.
