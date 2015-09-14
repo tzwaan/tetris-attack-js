@@ -1,10 +1,11 @@
 GLOBAL.game = new Phaser.Game(16*SCALE*GAME_WIDTH,
                            16*SCALE*GAME_HEIGHT,
-                           Phaser.AUTO,
-                           'wrapper',
+                           Phaser.CANVAS,
+                           'phaser',
                            {preload: preload,
                             create: create,
                             update: update});
+//GLOBAL.game.stage.smoothed = false;
 
 function loadSprites(block_names, cursor_names) {
     var i;
@@ -45,9 +46,18 @@ function preload() {
     loadSprites(BLOCK_SPRITES, CURSOR_SPRITES);
     GLOBAL.game.time.desiredFps = 20;
 }
+
+// make sure pixels stay pixels
+var pixelcontext = null;
+var pixelwidth = 0;
+var pixelheight = 0;
 function create() {
-    cursor_controller = GLOBAL.game.input.keyboard.createCursorKeys();
-    cursor_controller.space = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    // make sure pixels stay pixels
+    var pixelCanvas = document.getElementById("pixel");
+    pixelcontext = pixelCanvas.getContext("2d");
+    pixelwidth = pixelCanvas.width;
+    pixelheight = pixelCanvas.height;
+    Phaser.Canvas.setSmoothingEnabled(pixelcontext, false);
 
     var game = new TaGame();
     // make sure the cursor is always on top:
@@ -62,14 +72,6 @@ function create() {
 
 
     GLOBAL.taGame_list[0] = game;
-
-    /*
-    cursor_controller.left.onDown.add(move_left);
-    cursor_controller.right.onDown.add(move_right);
-    cursor_controller.up.onDown.add(move_up);
-    cursor_controller.down.onDown.add(move_down);
-    cursor_controller.space.onDown.add(move_switch);
-    */
 }
 function update() {
     game = GLOBAL.taGame_list[0];
@@ -77,4 +79,7 @@ function update() {
     game.tick();
 
     game.render();
+
+    // make sure pixels stay pixels.
+    pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16*SCALE, GAME_HEIGHT*16*SCALE, 0, 0, pixelwidth, pixelheight);
 }
