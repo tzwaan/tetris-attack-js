@@ -1,5 +1,5 @@
-GLOBAL.game = new Phaser.Game(16*SCALE*GAME_WIDTH,
-                           16*SCALE*GAME_HEIGHT,
+GLOBAL.game = new Phaser.Game(16*GAME_WIDTH,
+                           16*GAME_HEIGHT,
                            Phaser.CANVAS,
                            'phaser',
                            {preload: preload,
@@ -22,24 +22,22 @@ function loadSprites(block_names, cursor_names) {
     GLOBAL.nrCursorSprites = i;
 }
 
-/* Change this to render() */
-//function sync_sprites() {
-//    /* Sets the locations of the sprites to
-//     * the corresponding locations in the tower array */
-//    var height = tower_height*16*SCALE;
-//    for (var x=0; x<tower_width; x++) {
-//        for (var y=0; y<tower_height; y++) {
-//            if (main_tower[x][y] != null) {
-//                main_tower[x][y].x = 16*SCALE*x;
-//                main_tower[x][y].grid.x = x;
-//                main_tower[x][y].y = height - 16*SCALE* (y + 1);
-//                main_tower[x][y].grid.y = y;
-//            }
-//        }
-//    }
-//    cursor.x = (16*SCALE*cursor.grid.x) - (2 * SCALE);
-//    cursor.y = height - ((16*SCALE*(cursor.grid.y+1)) + (2 * SCALE));
-//}
+/* PixelCanvas
+ * makes sure pixelart stays pixelart and doesn't get blurry
+ * on a larger canvas
+ */
+function pixelCanvas() {
+    var width = 16*SCALE*GAME_WIDTH;
+    var height = 16*SCALE*GAME_HEIGHT;
+    var pixelCanvas = document.getElementById("pixel");
+    pixelCanvas.width = width;
+    pixelCanvas.height = height;
+
+    PIXELCANVAS.pixelcontext = pixelCanvas.getContext("2d");
+    PIXELCANVAS.pixelwidth = pixelCanvas.width;
+    PIXELCANVAS.pixelheight = pixelCanvas.height;
+    Phaser.Canvas.setSmoothingEnabled(PIXELCANVAS.pixelcontext, false);
+}
 
 /* Phaser functions */
 function preload() {
@@ -47,17 +45,9 @@ function preload() {
     GLOBAL.game.time.desiredFps = 20;
 }
 
-// make sure pixels stay pixels
-var pixelcontext = null;
-var pixelwidth = 0;
-var pixelheight = 0;
 function create() {
     // make sure pixels stay pixels
-    var pixelCanvas = document.getElementById("pixel");
-    pixelcontext = pixelCanvas.getContext("2d");
-    pixelwidth = pixelCanvas.width;
-    pixelheight = pixelCanvas.height;
-    Phaser.Canvas.setSmoothingEnabled(pixelcontext, false);
+    pixelCanvas();
 
     var game = new TaGame();
     // make sure the cursor is always on top:
@@ -79,7 +69,4 @@ function update() {
     game.tick();
 
     game.render();
-
-    // make sure pixels stay pixels.
-    pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16*SCALE, GAME_HEIGHT*16*SCALE, 0, 0, pixelwidth, pixelheight);
 }

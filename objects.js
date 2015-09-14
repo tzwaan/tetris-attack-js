@@ -73,7 +73,6 @@ function Block() {
             this.erase();
         }
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+sprite_nr, 0);
-        this.sprite.scale.setTo(SCALE, SCALE);
         GLOBAL.block_layer.add(this.sprite);
     }
 
@@ -331,13 +330,15 @@ function TaGame() {
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height; y++) {
                 if (this.blocks[x][y].sprite) {
-                    this.blocks[x][y].sprite.x = x*16*SCALE;
-                    this.blocks[x][y].sprite.y = this.height*16*SCALE - (y+1)*16*SCALE;
+                    this.blocks[x][y].sprite.x = x*16;
+                    this.blocks[x][y].sprite.y = this.height*16 - (y+1)*16;
                 }
             }
         }
-        this.cursor.sprite.x = this.cursor.x*16*SCALE - (2*SCALE);
-        this.cursor.sprite.y = this.height*16*SCALE - (this.cursor.y+1)*16*SCALE - (2*SCALE);
+        this.cursor.sprite.x = this.cursor.x*16 - 2;
+        this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 2;
+
+        PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, GAME_HEIGHT*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
     }
 }
 
@@ -364,7 +365,6 @@ function Cursor() {
         this.right = game.blocks[this.x+1][this.y];
 
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
-        this.sprite.scale.setTo(SCALE, SCALE);
         GLOBAL.cursor_layer.add(this.sprite);
 
         this.controller = GLOBAL.game.input.keyboard.createCursorKeys();

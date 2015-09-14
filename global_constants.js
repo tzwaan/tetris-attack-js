@@ -1,5 +1,5 @@
 /* The factor at which the game is scaled on your screen */
-const SCALE = 1;
+const SCALE = 3;
 const GAME_WIDTH = 6;
 const GAME_HEIGHT = 12;
 const BLOCK_SPRITES = [
@@ -18,3 +18,6 @@ const GLOBAL = {game: null,
                 ],
                 block_layer: 0,
                 cursor_layer: 0}
+const PIXELCANVAS = {pixelcontent: null,
+                     pixelwidth: 0,
+                     pixelheight: 0}
