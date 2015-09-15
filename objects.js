@@ -386,8 +386,8 @@ function TaGame() {
                 this.blocks[x][y].render();
             }
         }
-        this.cursor.sprite.x = this.cursor.x*16 - 2;
-        this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 2;
+        this.cursor.sprite.x = this.cursor.x*16 - 3;
+        this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 3;
 
         PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, GAME_HEIGHT*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
     }
@@ -416,6 +416,8 @@ function Cursor() {
         this.right = game.blocks[this.x+1][this.y];
 
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
+        this.sprite.animations.add('idle');
+        this.sprite.animations.play('idle', 2, true);
         GLOBAL.cursor_layer.add(this.sprite);
 
         this.controller = GLOBAL.game.input.keyboard.createCursorKeys();

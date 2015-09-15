@@ -17,7 +17,7 @@ function loadSprites(block_names, cursor_names) {
 
     for (var i=0; i<cursor_names.length; i++) {
         GLOBAL.game.load.spritesheet('cursor' + i,
-                'sprites/' + cursor_names[i] + '.png', 36, 20, 1);
+                'sprites/' + cursor_names[i] + '.png', 38, 22, 2);
     }
     GLOBAL.nrCursorSprites = i;
 }
