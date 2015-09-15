@@ -416,7 +416,7 @@ function Cursor() {
         this.right = game.blocks[this.x+1][this.y];
 
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
-        this.sprite.animations.add('idle');
+        this.sprite.animations.add('idle', [0, 1]);
         this.sprite.animations.play('idle', 2, true);
         GLOBAL.cursor_layer.add(this.sprite);
 
