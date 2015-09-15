@@ -64,9 +64,11 @@ function create() {
     GLOBAL.taGame_list[0] = game;
 }
 function update() {
-    game = GLOBAL.taGame_list[0];
+    for (var i=0; i < GLOBAL.taGame_list.length; i++) {
+        game = GLOBAL.taGame_list[i];
 
-    game.tick();
+        game.tick();
 
-    game.render();
+        game.render();
+    }
 }

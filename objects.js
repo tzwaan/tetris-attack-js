@@ -5,14 +5,24 @@ const HANG = 1
 const FALL = 2
 const SWAP = 3
 const CLEAR = 4
+/* Animation states */
+const ANIM_SWAP_LEFT = 0;
+const ANIM_SWAP_RIGHT = 1;
+const ANIM_LAND = 2;
+const ANIM_CLEAR = 4;
 
 /* Timing */
 const HANGTIME = 6;
 const FALLTIME = 4;
 const SWAPTIME = 0;
 const CLEARTIME = 12;
+/* Animation timing */
+const ANIM_SWAPTIME = 4;
+const ANIM_LANDTIME = 0;
+const ANIM_CLEARTIME = 0;
 
 function Block() {
+    this.game = null;
     this.x = null;
     this.y = null;
     this.state = null;
@@ -21,6 +31,8 @@ function Block() {
     this.left = null;
     this.right = null;
     this.counter = 0;
+    this.animation_state = null;
+    this.animation_counter = 0;
     this.chain = null;
     this.is_cursor = null;
     this.sprite = null;
@@ -58,7 +70,8 @@ function Block() {
     }
 
     /* Active functions */
-    this.init = function(x, y) {
+    this.init = function(game, x, y) {
+        this.game = game
         this.x = x;
         this.y = y;
         this.state = STATIC;
@@ -137,6 +150,41 @@ function Block() {
         }
     }
 
+    /* Set the block sprite to the correct rendering location,
+     * keeping animations and offsets in mind
+     * const ANIM_SWAP_LEFT = 0;
+     * const ANIM_SWAP_RIGHT = 1;
+     * const ANIM_LAND = 2;
+     * const ANIM_CLEAR = 4;
+     * const ANIM_SWAPTIME = 3;
+     * const ANIM_LANDTIME = 0;
+     * const ANIM_CLEARTIME = 0;
+     */
+    this.render = function() {
+        if (this.sprite) {
+            this.sprite.x = this.x*16;
+            this.sprite.y = this.game.height*16 - (this.y+1)*16;
+
+            if (this.animation_counter <= 0)
+                return;
+            if (this.animation_counter > 0) {
+                this.animation_counter--;
+            }
+            switch (this.animation_state) {
+                case ANIM_SWAP_LEFT:
+                    var step = 16/ANIM_SWAPTIME;
+                    this.sprite.x += step * this.animation_counter;
+                    break;
+                case ANIM_SWAP_RIGHT:
+                    var step = 16/ANIM_SWAPTIME;
+                    this.sprite.x -= step * this.animation_counter;
+                    break;
+                default:
+                    console.log("No animation");
+            }
+        }
+    }
+
     this.fall = function() {
         this.under.state = this.state;
         this.under.counter = this.counter;
@@ -167,6 +215,8 @@ function Block() {
         else {
             this.state = SWAP;
             this.counter = SWAPTIME;
+            this.animation_state = ANIM_SWAP_LEFT;
+            this.animation_counter = ANIM_SWAPTIME;
         }
 
         if (this.right.sprite == null) {
@@ -177,6 +227,8 @@ function Block() {
         else {
             this.right.state = SWAP;
             this.right.counter = SWAPTIME;
+            this.right.animation_state = ANIM_SWAP_RIGHT;
+            this.right.animation_counter = ANIM_SWAPTIME;
         }
 
     }
@@ -221,7 +273,7 @@ function TaGame() {
             blocks[x] = new Array(height);
             for (var y=0; y<height; y++) {
                 blocks[x][y] = new Block();
-                blocks[x][y].init();
+                blocks[x][y].init(this, x, y);
 
                 //temp testing code
                 if (y<4) {
@@ -284,6 +336,8 @@ function TaGame() {
         for (var x = 0; x < this.width; x++) {
             for (var y = 0; y < this.height; y++) {
                 this.blocks[x][y].updateState();
+                this.blocks[x][y].x = x;
+                this.blocks[x][y].y = y;
             }
         }
     }
@@ -329,10 +383,7 @@ function TaGame() {
     this.render = function() {
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height; y++) {
-                if (this.blocks[x][y].sprite) {
-                    this.blocks[x][y].sprite.x = x*16;
-                    this.blocks[x][y].sprite.y = this.height*16 - (y+1)*16;
-                }
+                this.blocks[x][y].render();
             }
         }
         this.cursor.sprite.x = this.cursor.x*16 - 2;
