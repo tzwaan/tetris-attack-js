@@ -151,7 +151,7 @@ function Block() {
                     this.state = this.under.state;
                     this.counter = this.under.counter;
                 }
-                if (this.state == STATIC && this.sprite) {
+                if ((this.state == STATIC || this.state == SWAP) && this.sprite) {
                     this.sprite.animations.play('land', GLOBAL.game.time.desiredFps, false);
                 }
                 break;
