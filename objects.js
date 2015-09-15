@@ -86,6 +86,7 @@ function Block() {
             this.erase();
         }
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+sprite_nr, 0);
+        this.sprite.animations.add('land', [4, 2, 3, 0]);
         GLOBAL.block_layer.add(this.sprite);
     }
 
@@ -139,6 +140,9 @@ function Block() {
                 else {
                     this.state = this.under.state;
                     this.counter = this.under.counter;
+                }
+                if (this.state == STATIC && this.sprite) {
+                    this.sprite.animations.play('land', GLOBAL.game.time.desiredFps, false);
                 }
                 break;
             case CLEAR:

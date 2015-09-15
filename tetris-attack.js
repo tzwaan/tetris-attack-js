@@ -46,7 +46,6 @@ function preload() {
 }
 
 function create() {
-    // make sure pixels stay pixels
     pixelCanvas();
 
     var game = new TaGame();
