@@ -97,17 +97,8 @@ function Block() {
         }
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+sprite_nr, 0);
         this.sprite.animations.add('land', [4, 2, 3, 0]);
+        this.sprite.animations.add('clear', [6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 5]);
         GLOBAL.block_layer.add(this.sprite);
-    }
-
-    this.clear = function() {
-        if (this.state == CLEAR)
-            return false;
-
-        this.counter = CLEARTIME;
-        this.state = CLEAR;
-        this.chain = true;
-        return true;
     }
 
     this.updateState = function() {
@@ -255,11 +246,44 @@ function Block() {
         this.chain = false;
     }
 
+    this.clear = function() {
+        if (this.state == CLEAR)
+            return 0;
+
+        this.counter = CLEARTIME;
+        this.state = CLEAR;
+        this.chain = true;
+
+        this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
+        return 1;
+    }
+
     this.combo = function() {
         var combo = 0;
 
-        if (this.left.isComboable() && this.right.isComboable()) {
+        if (!this.isComboable()) {
+            return combo;
         }
+
+        if (this.left.isComboable() && this.right.isComboable()) {
+            if (this.left.sprite.key == this.sprite.key
+                    && this.right.sprite.key == this.sprite.key) {
+                combo += this.clear();
+                combo += this.left.clear();
+                combo += this.right.clear();
+            }
+        }
+
+        if (this.above.isComboable() && this.under.isComboable()) {
+            if (this.above.sprite.key == this.sprite.key
+                    && this.under.sprite.key == this.sprite.key) {
+                combo += this.clear();
+                combo += this.above.clear();
+                combo += this.under.clear();
+            }
+        }
+
+        return combo;
     }
 }
 
@@ -399,6 +423,9 @@ function TaGame() {
             this.chain = 1;
         }
         */
+        if (combo > 0) {
+            console.log("combo bigger than 0", combo);
+        }
         // spawn garbage
 
 
@@ -478,7 +505,6 @@ function Cursor() {
     }
 
     this.mv_swap = function() {
-        console.log(this.game);
         this.game.swap(this.x, this.y);
     }
 }
