@@ -34,14 +34,10 @@ function Block() {
     this.animation_state = null;
     this.animation_counter = 0;
     this.chain = null;
-    this.is_cursor = null;
     this.sprite = null;
 
     /* Informational functions */
     this.isSwappable = function() {
-        console.log(this.counter);
-        if (!this.above)
-            return this.counter == 0;
         if (this.above.state == HANG)
             return false;
         return this.counter == 0;
@@ -58,7 +54,6 @@ function Block() {
 
     this.isClearable = function() {
         return this.isSwappable()
-            && this.under != null
             && this.under.isSupport()
             && this.sprite != null;
     }
@@ -71,14 +66,29 @@ function Block() {
 
     /* Active functions */
     this.init = function(game, x, y) {
-        this.game = game
+        this.game = game;
         this.x = x;
         this.y = y;
         this.state = STATIC;
     }
+    this.initWall = function(game) {
+        this.game = game;
+        this.x = null;
+        this.y = null;
+        this.under = this;
+        this.above = this;
+        this.left = this;
+        this.right = this;
+        this.state = STATIC;
+        this.counter = 0;
+        this.animation_state = null;
+        this.animation_counter = 0;
+        this.sprite = null;
+    }
 
     this.newBlock = function(sprite_nr) {
         if (sprite_nr === undefined) {
+            // No block number given, so generate random block
             sprite_nr = Math.floor(Math.random() * GLOBAL.nrBlockSprites)
         }
         /* Check if there is no other sprite, otherwise it will stay onscreen*/
@@ -115,7 +125,7 @@ function Block() {
                 if (!this.sprite) {
                     return;
                 }
-                else if (!this.under) {
+                else if (this.under == this.game.wall) {
                     this.state = STATIC;
                 }
                 else if (this.under.state == HANG) {
@@ -244,6 +254,13 @@ function Block() {
         this.counter = 0;
         this.chain = false;
     }
+
+    this.combo = function() {
+        var combo = 0;
+
+        if (this.left.isComboable() && this.right.isComboable()) {
+        }
+    }
 }
 
 
@@ -259,6 +276,7 @@ function TaGame() {
     this.config = null;
     this.command = null;
     this.cursor = null;
+    this.wall = null;
 
     /* Create a new blocks array and fill it with the old shifted 1 up */
     this.push = function(height) {
@@ -299,6 +317,9 @@ function TaGame() {
         this.cursor = new Cursor();
         this.cursor.init(this);
 
+        this.wall = new Block();
+        this.wall.initWall();
+
         this.updateNeighbors();
         this.render();
     }
@@ -312,25 +333,25 @@ function TaGame() {
                 if (x > 0) {
                     block.left = this.blocks[x-1][y];
                 } else {
-                    block.left = null;
+                    block.left = this.wall;
                 }
 
                 if (x < this.width-1) {
                     block.right = this.blocks[x+1][y];
                 } else {
-                    block.right = null;
+                    block.right = this.wall;
                 }
 
                 if (y > 0) {
                     block.under = this.blocks[x][y-1];
                 } else {
-                    block.under = null;
+                    block.under = this.wall;
                 }
 
                 if (y < this.height-1) {
                     block.above = this.blocks[x][y+1];
                 } else {
-                    block.above = null;
+                    block.above = this.wall;
                 }
             }
         }
@@ -369,7 +390,7 @@ function TaGame() {
     this.tick = function() {
         this.updateNeighbors();
         this.updateState();
-        //var combo = this.updateCombo();
+        var combo = this.updateCombo();
 
         /* TODO this is incorrect at the moment
         if (combo > 0) {
@@ -421,7 +442,7 @@ function Cursor() {
 
         this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
         this.sprite.animations.add('idle', [0, 1]);
-        this.sprite.animations.play('idle', 2, true);
+        this.sprite.animations.play('idle', Math.round(GLOBAL.game.time.desiredFps/10), true);
         GLOBAL.cursor_layer.add(this.sprite);
 
         this.controller = GLOBAL.game.input.keyboard.createCursorKeys();
