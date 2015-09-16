@@ -41,6 +41,7 @@ function Block() {
         this.x = x;
         this.y = y;
         this.state = STATIC;
+        this.chain = false;
     }
     this.initWall = function(game) {
         this.game = game;
@@ -200,18 +201,17 @@ function Block() {
         this.state = STATIC;
         this.counter = 0;
         this.sprite = null;
-        this.chain = null;
+        this.chain = false;
     }
 
     this.swap = function() {
         var temp_sprite = this.right.sprite;
-        var temp_chain = this.right.chain;
 
         this.right.sprite = this.sprite;
-        this.right.chain = this.chain;
+        this.right.chain = false;
 
         this.sprite = temp_sprite;
-        this.chain = temp_chain;
+        this.chain = false;
 
         if (this.sprite == null) {
             this.state = STATIC;
@@ -243,6 +243,8 @@ function Block() {
         this.state = STATIC;
         this.counter = 0;
         this.chain = false;
+        if (this.above.sprite)
+            this.above.chain = true;
     }
 
     this.clear = function() {
@@ -251,7 +253,6 @@ function Block() {
 
         this.counter = CLEARTIME;
         this.state = CLEAR;
-        this.chain = true;
 
         this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
         return 1;
