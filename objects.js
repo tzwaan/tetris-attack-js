@@ -419,7 +419,7 @@ function TaGame() {
         }
         */
         if (combo > 0) {
-            console.log("combo bigger than 0", combo);
+            console.log("combo is ", combo);
         }
         // spawn garbage
 
