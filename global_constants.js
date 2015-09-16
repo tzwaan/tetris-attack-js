@@ -8,6 +8,7 @@ const BLOCK_SPRITES = [
     'block_green',
     'block_purple',
     'block_red',
+    'block_via',
 ]
 const CURSOR_SPRITES = [
     'cursor'
