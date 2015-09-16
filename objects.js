@@ -36,35 +36,6 @@ function Block() {
     this.chain = null;
     this.sprite = null;
 
-    /* Informational functions */
-    this.isSwappable = function() {
-        if (this.above.state == HANG)
-            return false;
-        return this.counter == 0;
-    }
-
-    this.isEmpty = function() {
-        return this.counter == 0
-            && this.sprite == null;
-    }
-
-    this.isSupport = function() {
-        return this.state != FALL;
-    }
-
-    this.isClearable = function() {
-        return this.isSwappable()
-            && this.under.isSupport()
-            && this.sprite != null;
-    }
-
-    this.isComboable = function() {
-        return this.isClearable()
-            || (this.state == CLEAR
-                && this.counter == CLEARTIME)
-    }
-
-    /* Active functions */
     this.init = function(game, x, y) {
         this.game = game;
         this.x = x;
@@ -86,6 +57,36 @@ function Block() {
         this.sprite = null;
     }
 
+    /* Informational functions */
+    this.isSwappable = function() {
+        if (this.above.state == HANG)
+            return false;
+        return this.counter == 0;
+    }
+
+    this.isEmpty = function() {
+        return this.counter == 0
+            && this.sprite == null
+            && this != this.game.wall;
+    }
+
+    this.isSupport = function() {
+        return this.state != FALL;
+    }
+
+    this.isClearable = function() {
+        return this.isSwappable()
+            && this.under.isSupport()
+            && this.sprite != null;
+    }
+
+    this.isComboable = function() {
+        return this.isClearable()
+            || (this.state == CLEAR
+                && this.counter == CLEARTIME)
+    }
+
+    /* Active functions */
     this.newBlock = function(sprite_nr) {
         if (sprite_nr === undefined) {
             // No block number given, so generate random block
@@ -148,7 +149,6 @@ function Block() {
                 break;
             case CLEAR:
                 this.erase();
-                this.counter = CLEARTIME;
                 break;
             default:
                 console.log("Unknown block state!");
@@ -185,7 +185,6 @@ function Block() {
                     this.sprite.x -= step * this.animation_counter;
                     break;
                 default:
-                    console.log("No animation");
             }
         }
     }
@@ -213,7 +212,6 @@ function Block() {
         this.chain = temp_chain;
 
         if (this.sprite == null) {
-            console.log('sprite is null');
             this.state = STATIC;
             this.counter = 0;
         }
@@ -225,7 +223,6 @@ function Block() {
         }
 
         if (this.right.sprite == null) {
-            console.log('sprite is null');
             this.right.state = STATIC;
             this.right.counter = 0;
         }
@@ -342,7 +339,7 @@ function TaGame() {
         this.cursor.init(this);
 
         this.wall = new Block();
-        this.wall.initWall();
+        this.wall.initWall(this);
 
         this.updateNeighbors();
         this.render();
@@ -403,11 +400,9 @@ function TaGame() {
     }
 
     this.swap = function(x, y) {
-        console.log("game.swap call");
         if (!this.blocks[x][y].isSwappable()
             || !this.blocks[x+1][y].isSwappable())
             return;
-        console.log("game.swap swapping");
         this.blocks[x][y].swap();
     }
 
