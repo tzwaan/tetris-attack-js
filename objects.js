@@ -14,7 +14,7 @@ const ANIM_CLEAR = 4;
 /* Timing */
 const HANGTIME = 6;
 const FALLTIME = 4;
-const SWAPTIME = 0;
+const SWAPTIME = 2;
 const CLEARTIME = 12;
 /* Animation timing */
 const ANIM_SWAPTIME = 4;
@@ -71,7 +71,9 @@ function Block() {
     }
 
     this.isSupport = function() {
-        return this.state != FALL;
+        return this.state != FALL
+            && (this.sprite != null
+                    || this.game.wall == this);
     }
 
     this.isClearable = function() {
