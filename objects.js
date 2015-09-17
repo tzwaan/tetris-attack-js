@@ -118,6 +118,7 @@ function Block() {
             case STATIC:
             case SWAP:
                 if (!this.sprite) {
+                    this.state = STATIC;
                     return;
                 }
                 else if (this.under == this.game.wall) {
@@ -132,6 +133,9 @@ function Block() {
                     this.state = HANG;
                     this.counter = HANGTIME;
                 }
+                else if (this.chain) {
+                    this.chain = false;
+                }
                 break;
             case HANG:
                 this.state = FALL;
@@ -145,6 +149,9 @@ function Block() {
                 else {
                     this.state = this.under.state;
                     this.counter = this.under.counter;
+                    if (this.under.chain) {
+                        this.chain = true;
+                    }
                 }
                 if ((this.state == STATIC || this.state == SWAP) && this.sprite) {
                     this.sprite.animations.play('land', GLOBAL.game.time.desiredFps, false);
@@ -214,7 +221,7 @@ function Block() {
         this.chain = false;
 
         if (this.sprite == null) {
-            this.state = STATIC;
+            this.state = SWAP;
             this.counter = 0;
         }
         else {
@@ -225,7 +232,7 @@ function Block() {
         }
 
         if (this.right.sprite == null) {
-            this.right.state = STATIC;
+            this.right.state = SWAP;
             this.right.counter = 0;
         }
         else {
@@ -249,41 +256,57 @@ function Block() {
 
     this.clear = function() {
         if (this.state == CLEAR)
-            return 0;
+            return [0, this.chain];
 
         this.counter = CLEARTIME;
         this.state = CLEAR;
 
         this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
-        return 1;
+        return [1, this.chain];
     }
 
-    this.combo = function() {
+    /* return the combo and chain */
+    this.cnc = function() {
         var combo = 0;
+        var chain = false;
 
         if (!this.isComboable()) {
-            return combo;
+            return [combo, chain];
         }
 
         if (this.left.isComboable() && this.right.isComboable()) {
             if (this.left.sprite.key == this.sprite.key
                     && this.right.sprite.key == this.sprite.key) {
-                combo += this.clear();
-                combo += this.left.clear();
-                combo += this.right.clear();
+                var middle = this.clear();
+                var left = this.left.clear();
+                var right = this.right.clear();
+                combo += middle[0];
+                combo += left[0];
+                combo += right[0];
+
+                if (middle[1] || left[1] || right[1]) {
+                    chain = true;
+                }
             }
         }
 
         if (this.above.isComboable() && this.under.isComboable()) {
             if (this.above.sprite.key == this.sprite.key
                     && this.under.sprite.key == this.sprite.key) {
-                combo += this.clear();
-                combo += this.above.clear();
-                combo += this.under.clear();
+                var middle = this.clear();
+                var above = this.above.clear();
+                var under = this.under.clear();
+                combo += middle[0];
+                combo += above[0];
+                combo += under[0];
+
+                if (middle[1] || above[1] || under[1]) {
+                    chain = true;
+                }
             }
         }
 
-        return combo;
+        return [combo, chain];
     }
 }
 
@@ -391,15 +414,20 @@ function TaGame() {
         }
     }
 
-    this.updateCombo = function() {
+    this.updateCnc = function() {
         var combo = 0;
+        var chain = false;
 
         for (var x = 0; x < this.width; x++) {
             for (var y = 0; y < this.height; y++) {
-                combo += this.blocks[x][y].combo();
+                cnc = this.blocks[x][y].cnc();
+                combo += cnc[0];
+                if (cnc[1]) {
+                    chain = true;
+                }
             }
         }
-        return combo;
+        return [combo, chain];
     }
 
     this.swap = function(x, y) {
@@ -412,7 +440,8 @@ function TaGame() {
     this.tick = function() {
         this.updateNeighbors();
         this.updateState();
-        var combo = this.updateCombo();
+        // combo n chain
+        var cnc = this.updateCnc();
 
         /* TODO this is incorrect at the moment
         if (combo > 0) {
@@ -421,8 +450,8 @@ function TaGame() {
             this.chain = 1;
         }
         */
-        if (combo > 0) {
-            console.log("combo is ", combo);
+        if (cnc[0] > 0) {
+            console.log("combo is ", cnc);
         }
         // spawn garbage
 

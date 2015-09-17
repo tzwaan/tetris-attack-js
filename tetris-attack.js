@@ -55,9 +55,6 @@ function create() {
 
     game.newGame(6, 12, GLOBAL.nrBlockSprites);
     console.log(game);
-    game.blocks[4][9].newBlock();
-    game.blocks[4][8].newBlock();
-    game.blocks[4][10].newBlock();
 
 
     GLOBAL.taGame_list[0] = game;
