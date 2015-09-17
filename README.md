@@ -12,7 +12,7 @@ This is based upon an earlier code draft in go-lang in collaboration with
 Tetris Attack JS is currently in development.
 
 A mostly up-to-date version can be played here:
-[tetris-attack-js](http://tzwaan.com/tetris-attack-js/)
+[tetris-attack-js](http://tij.men/tetris-attack-js/)
 
 ## Sprites
 
