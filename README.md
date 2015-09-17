@@ -7,7 +7,7 @@ improvements to things like online multiplayer (of which in the original there
 is of course none).
 
 This is based upon an earlier code draft in go-lang in collaboration with
-@jessethegame, called [go-attack](https://github.com/jessethegame/go-attack)
+[jessethegame](https://github.com/jessethegame/), called [go-attack](https://github.com/jessethegame/go-attack)
 
 Tetris Attack JS is currently in development.
 
