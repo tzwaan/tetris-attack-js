@@ -1,10 +1,11 @@
 GLOBAL.game = new Phaser.Game(16*GAME_WIDTH,
-                           16*(GAME_HEIGHT),
+                           16*(GAME_HEIGHT + 1),
                            Phaser.CANVAS,
                            'phaser',
                            {preload: preload,
                             create: create,
                             update: update});
+GLOBAL.game.cache.destroy();
 //GLOBAL.game.stage.smoothed = false;
 
 function loadSprites(block_names, cursor_names) {
@@ -28,7 +29,7 @@ function loadSprites(block_names, cursor_names) {
  */
 function pixelCanvas() {
     var width = 16*SCALE*GAME_WIDTH;
-    var height = 16*SCALE*GAME_HEIGHT;
+    var height = 16*SCALE*(GAME_HEIGHT + 1);
     var pixelCanvas = document.getElementById("pixel");
     pixelCanvas.width = width;
     pixelCanvas.height = height;
