@@ -549,6 +549,11 @@ function TaGame() {
     }
 
     this.tick = function() {
+        this.pushCounter--;
+        if (!this.pushCounter) {
+            this.push();
+            this.pushCounter = this.pushTime;
+        }
         this.updateNeighbors();
         this.updateState();
         // combo n chain
@@ -557,13 +562,6 @@ function TaGame() {
             if (this.chainOver()) {
                 console.log("chain over");
                 this.chain = 0;
-            }
-        }
-        else {
-            this.pushCounter--;
-            if (!this.pushCounter) {
-                this.push();
-                this.pushCounter = this.pushTime;
             }
         }
 
