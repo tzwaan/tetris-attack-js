@@ -16,11 +16,12 @@ const HANGTIME = 6;
 const FALLTIME = 4;
 const SWAPTIME = 2;
 const CLEARTIME = 12;
-const PUSHTIME = 100;
+const PUSHTIME = 1000;
 /* Animation timing */
 const ANIM_SWAPTIME = 4;
 const ANIM_LANDTIME = 0;
-const ANIM_CLEARTIME = 0;
+const ANIM_CLEARTIME = 15;
+const ANIM_DANGERTIME = 6;
 
 function Block() {
     this.game = null;
@@ -105,6 +106,7 @@ function Block() {
         this.sprite.animations.add('clear', [6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 5]);
         this.sprite.animations.add('live', [0]);
         this.sprite.animations.add('dead', [1]);
+        this.sprite.animations.add('danger', [0, 4, 0, 3, 2, 3]);
         GLOBAL.block_layer.add(this.sprite);
     }
 
@@ -187,7 +189,7 @@ function Block() {
                 this.sprite.y = this.game.height*16 - (this.y+1)*16;
 
                 if (this.animation_counter <= 0)
-                    return;
+                    this.animation_state = null;
                 if (this.animation_counter > 0) {
                     this.animation_counter--;
                 }
@@ -199,6 +201,9 @@ function Block() {
                     case ANIM_SWAP_RIGHT:
                         var step = 16/ANIM_SWAPTIME;
                         this.sprite.x -= step * this.animation_counter;
+                        break;
+                    case ANIM_CLEAR:
+                    case ANIM_LAND:
                         break;
                     default:
                 }
@@ -392,6 +397,8 @@ function TaGame() {
         this.fillBlocks(this.nextLine, 6, 1);
         if (this.cursor.y < this.height-1)
             this.cursor.y++;
+
+        return 1;
     }
 
     /* Create a new array of blocks with one extra for spawning blocks */
@@ -549,13 +556,24 @@ function TaGame() {
         }
     }
 
-    this.danger = function() {
+    this.isDanger = function(height) {
+        for (var x=0; x<this.width; x++) {
+            for (var y=this.height-1; y>(this.height-1)-height; y--) {
+                if (this.blocks[x][y].sprite) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     this.tick = function() {
-        this.pushCounter--;
-        if (!this.pushCounter) {
-            this.push();
+        if (this.cursor.controller.push.isDown)
+            this.pushCounter -= 100;
+        else
+            this.pushCounter--;
+        if (this.pushCounter <= 0) {
+            this.score += this.push();
             this.pushCounter = this.pushTime;
         }
         this.updateNeighbors();
@@ -643,13 +661,14 @@ function Cursor() {
         GLOBAL.cursor_layer.add(this.sprite);
 
         this.controller = GLOBAL.game.input.keyboard.createCursorKeys();
-        this.controller.space = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.controller.swap = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.controller.push = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.C);
 
         this.controller.left.onDown.add(this.mv_left, this);
         this.controller.right.onDown.add(this.mv_right, this);
         this.controller.down.onDown.add(this.mv_down, this);
         this.controller.up.onDown.add(this.mv_up, this);
-        this.controller.space.onDown.add(this.mv_swap, this);
+        this.controller.swap.onDown.add(this.mv_swap, this);
     }
 
     this.mv_left = function() {
