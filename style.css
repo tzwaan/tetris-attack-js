@@ -12,3 +12,8 @@ canvas {
     position: relative;
     display: block;
 }
+.controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
