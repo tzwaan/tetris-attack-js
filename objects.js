@@ -390,7 +390,8 @@ function TaGame() {
         this.blocks = blocks;
         this.nextLine = this.newBlocks(6, 1);
         this.fillBlocks(this.nextLine, 6, 1);
-        this.cursor.y++;
+        if (this.cursor.y < this.height-1)
+            this.cursor.y++;
     }
 
     /* Create a new array of blocks with one extra for spawning blocks */
@@ -548,6 +549,9 @@ function TaGame() {
         }
     }
 
+    this.danger = function() {
+    }
+
     this.tick = function() {
         this.pushCounter--;
         if (!this.pushCounter) {
@@ -607,7 +611,7 @@ function TaGame() {
         GLOBAL.block_layer.y = (this.pushCounter/this.pushTime) * 16;
         GLOBAL.cursor_layer.y = (this.pushCounter/this.pushTime) * 16;
 
-        PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, GAME_HEIGHT*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
+        PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, (GAME_HEIGHT+1)*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
     }
 }
 
