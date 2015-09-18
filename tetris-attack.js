@@ -1,5 +1,5 @@
 GLOBAL.game = new Phaser.Game(16*GAME_WIDTH,
-                           16*GAME_HEIGHT,
+                           16*(GAME_HEIGHT),
                            Phaser.CANVAS,
                            'phaser',
                            {preload: preload,

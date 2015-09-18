@@ -1,7 +1,7 @@
 /* The factor at which the game is scaled on your screen */
-const SCALE = 3;
+const SCALE = 2.5;
 const GAME_WIDTH = 6;
-const GAME_HEIGHT = 12;
+const GAME_HEIGHT = 13;
 const BLOCK_SPRITES = [
     'block_blue',
     'block_yellow',
