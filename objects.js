@@ -107,6 +107,7 @@ function Block() {
         this.sprite.animations.add('live', [0]);
         this.sprite.animations.add('dead', [1]);
         this.sprite.animations.add('danger', [0, 4, 0, 3, 2, 3]);
+        this.sprite.animations.add('face', [5]);
         GLOBAL.block_layer.add(this.sprite);
     }
 
@@ -213,7 +214,6 @@ function Block() {
             if (this.sprite) {
                 this.sprite.x = this.x*16;
                 this.sprite.y = this.game.height*16;
-                this.sprite.animations.play('dead');
             }
         }
     }
@@ -383,6 +383,10 @@ function TaGame() {
 
     /* Create a new blocks array and fill it with the old shifted 1 up */
     this.push = function() {
+        if (this.isDanger(1)) {
+            this.gameOver();
+            return 0;
+        }
         var blocks = this.newBlocks(this.width, this.height);
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height-1; y++) {
@@ -395,10 +399,27 @@ function TaGame() {
         this.blocks = blocks;
         this.nextLine = this.newBlocks(6, 1);
         this.fillBlocks(this.nextLine, 6, 1);
+        for (var x=0; x<this.width; x++) {
+            this.nextLine[x][0].sprite.animations.play('dead');
+        }
         if (this.cursor.y < this.height-1)
             this.cursor.y++;
 
         return 1;
+    }
+
+    this.gameOver = function() {
+        for (var x=0; x<this.width; x++) {
+            for (var y=0; y<this.height; y++) {
+                if (this.blocks[x][y].sprite)
+                    this.blocks[x][y].sprite.animations.play('face');
+                this.tick = function() {
+                    console.log("game over bitch");
+                }
+            }
+            this.nextLine[x][0].sprite.animations.play('face');
+        }
+        this.pushCounter = 0;
     }
 
     /* Create a new array of blocks with one extra for spawning blocks */
@@ -573,8 +594,8 @@ function TaGame() {
         else
             this.pushCounter--;
         if (this.pushCounter <= 0) {
-            this.score += this.push();
             this.pushCounter = this.pushTime;
+            this.score += this.push();
         }
         this.updateNeighbors();
         this.updateState();
