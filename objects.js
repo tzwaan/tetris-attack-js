@@ -23,6 +23,11 @@ const ANIM_LANDTIME = 0;
 const ANIM_CLEARTIME = 15;
 const ANIM_DANGERTIME = 6;
 
+/* The block object.
+ * Represents a block in the grid. An empty spot in the grid (visually) is
+ * still represented by a block. This way each block can always ask its
+ * neighbors for information.
+ */
 function Block() {
     this.game = null;
     this.x = null;
@@ -38,6 +43,11 @@ function Block() {
     this.chain = null;
     this.sprite = null;
 
+    /* Initialise this block.
+     *
+     * game is the TaGame object this block belongs to.
+     * x and y are its coordinates in the grid
+     */
     this.init = function(game, x, y) {
         this.game = game;
         this.x = x;
@@ -45,6 +55,15 @@ function Block() {
         this.state = STATIC;
         this.chain = false;
     }
+
+    /* Initialise this block as a wall.
+     * A wall block will see itself as its neighbors.
+     * It is never supposed to have a sprite and should always have a state
+     * of STATIC.
+     * The wall is used on the outer edges of the grid.
+     *
+     * game is the TaGame object this block belongs to.
+     */
     this.initWall = function(game) {
         this.game = game;
         this.x = null;
@@ -60,38 +79,63 @@ function Block() {
         this.sprite = null;
     }
 
-    /* Informational functions */
+    /* Whether this block can be swapped or not.
+     * Blocks can be swapped as long as no counter is running.
+     * Blocks cannot be swapped underneath a block about to fall from hang
+     *
+     * returns a boolean
+     */
     this.isSwappable = function() {
         if (this.above.state == HANG)
             return false;
         return this.counter == 0;
     }
 
+    /* Whether this block is empty or not.
+     * returns a boolean
+     */
     this.isEmpty = function() {
         return this.counter == 0
             && this.sprite == null
             && this != this.game.wall;
     }
 
+    /* Whether this block will stop other blocks from falling.
+     * returns a boolean
+     */
     this.isSupport = function() {
         return this.state != FALL
             && (this.sprite != null
                     || this.game.wall == this);
     }
 
+    /* Whether this block can currently be cleared. It should not be busy and
+     * should be supported.
+     * returns a boolean
+     */
     this.isClearable = function() {
         return this.isSwappable()
             && this.under.isSupport()
             && this.sprite != null;
     }
 
+    /* Whether this block can currently participate in a combo. It should be
+     * clearable or already been cleared during this state update.
+     * returns a boolean
+     */
     this.isComboable = function() {
         return this.isClearable()
             || (this.state == CLEAR
                 && this.counter == CLEARTIME)
     }
 
-    /* Active functions */
+    /* Make this block a new block.
+     * Adds a sprite to the block, and animations to the sprite. Will
+     * overwrite any sprite already present.
+     *
+     * optional sprite_nr is an int indicating which sprite should be used.
+     * If none is specified, a random sprite will be picked.
+     */
     this.newBlock = function(sprite_nr) {
         if (sprite_nr === undefined) {
             // No block number given, so generate random block
@@ -111,6 +155,11 @@ function Block() {
         GLOBAL.block_layer.add(this.sprite);
     }
 
+    /* Update the current state of this block based on its own state, and the
+     * states of its neighbors.
+     * Will keep its current state it its counter is still running.
+     * Block behaviour should be described in the wiki
+     */
     this.updateState = function() {
         /* If the block has a counter, decrement it, return if it is not done*/
         if (this.counter > 0) {
@@ -174,14 +223,9 @@ function Block() {
     }
 
     /* Set the block sprite to the correct rendering location,
-     * keeping animations and offsets in mind
-     * const ANIM_SWAP_LEFT = 0;
-     * const ANIM_SWAP_RIGHT = 1;
-     * const ANIM_LAND = 2;
-     * const ANIM_CLEAR = 4;
-     * const ANIM_SWAPTIME = 3;
-     * const ANIM_LANDTIME = 0;
-     * const ANIM_CLEARTIME = 0;
+     * keeping animations and offsets in mind.
+     * optional nextLine boolean determines if the block should be in the grid
+     * or in the bottom line still being added.
      */
     this.render = function(nextLine) {
         if (!nextLine) {
@@ -218,6 +262,9 @@ function Block() {
         }
     }
 
+    /* This block will give its state and sprite to the block under it and then
+     * reset to an empty block.
+     */
     this.fall = function() {
         this.under.state = this.state;
         this.under.counter = this.counter;
@@ -230,6 +277,8 @@ function Block() {
         this.chain = false;
     }
 
+    /* Swap this block with its right neighbour.
+     */
     this.swap = function() {
         var temp_sprite = this.right.sprite;
 
@@ -260,9 +309,11 @@ function Block() {
             this.right.animation_state = ANIM_SWAP_RIGHT;
             this.right.animation_counter = ANIM_SWAPTIME;
         }
-
     }
 
+    /* Erase the contents of this block and start a chain in
+     * its upper neighbour.
+     */
     this.erase = function() {
         if (this.sprite)
             this.sprite.destroy();
@@ -274,6 +325,12 @@ function Block() {
             this.above.chain = true;
     }
 
+    /* Sets this blocks state to CLEAR.
+     *
+     * returns [combo, chain] where
+     * combo is an int represeting the nr of blocks that are set to clear.
+     * chain is a boolean telling if this block is part of a chain.
+     */
     this.clear = function() {
         if (this.state == CLEAR)
             return [0, this.chain];
@@ -285,7 +342,12 @@ function Block() {
         return [1, this.chain];
     }
 
-    /* return the combo and chain */
+    /* Combos and Chains the current block with its neighbours.
+     *
+     * returns [combo, chain] where
+     * combo is an int represeting the nr of blocks participating in the combo.
+     * chain is a boolean telling if this combo is part of a chain.
+     */
     this.cnc = function() {
         var combo = 0;
         var chain = false;
