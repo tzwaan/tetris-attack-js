@@ -5,7 +5,6 @@ GLOBAL.game = new Phaser.Game(16*GAME_WIDTH,
                            {preload: preload,
                             create: create,
                             update: update});
-GLOBAL.game.cache.destroy();
 //GLOBAL.game.stage.smoothed = false;
 
 function loadSprites(block_names, cursor_names) {
