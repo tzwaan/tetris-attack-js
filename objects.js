@@ -12,15 +12,17 @@ const ANIM_LAND = 2;
 const ANIM_CLEAR = 4;
 
 /* Timing */
-const HANGTIME = 6;
+const HANGTIME = 11;
 const FALLTIME = 4;
-const SWAPTIME = 2;
-const CLEARTIME = 12;
+const SWAPTIME = 4;
+const CLEARBLINKTIME = 44;
+const CLEARPAUSETIME = 23;
+const CLEAREXPLODETIME = 9;
 const PUSHTIME = 1000;
 /* Animation timing */
 const ANIM_SWAPTIME = 4;
 const ANIM_LANDTIME = 0;
-const ANIM_CLEARTIME = 15;
+const ANIM_CLEARBLINKTIME = 15;
 const ANIM_DANGERTIME = 6;
 
 /* The block object.
@@ -126,7 +128,7 @@ function Block() {
     this.isComboable = function() {
         return this.isClearable()
             || (this.state == CLEAR
-                && this.counter == CLEARTIME)
+                && this.counter == CLEARBLINKTIME)
     }
 
     /* Make this block a new block.
@@ -335,7 +337,7 @@ function Block() {
         if (this.state == CLEAR)
             return [0, this.chain];
 
-        this.counter = CLEARTIME;
+        this.counter = CLEARBLINKTIME;
         this.state = CLEAR;
 
         this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);

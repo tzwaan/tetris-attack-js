@@ -42,7 +42,7 @@ function pixelCanvas() {
 /* Phaser functions */
 function preload() {
     loadSprites(BLOCK_SPRITES, CURSOR_SPRITES);
-    GLOBAL.game.time.desiredFps = 20;
+    GLOBAL.game.time.desiredFps = 60;
 }
 
 function create() {
