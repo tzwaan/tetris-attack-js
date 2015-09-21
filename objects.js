@@ -395,7 +395,10 @@ function Block() {
 }
 
 
-/* The Tetris Attack Game object */
+/* The Tetris Attack Game object
+ * Contains a 2d array of block objects which will be rendered on screen.
+ * Keeps track of blocks, chains, combos and score.
+ */
 
 function TaGame() {
     this.width = null;
@@ -414,8 +417,12 @@ function TaGame() {
     this.pushTime = 0;
     this.pushCounter = 0;
 
-    /* Initialize new game with a viewport of x * y and given amount of
-     * different blocks */
+    /* Initializes a new game.
+     *
+     * width is the width of the blocks array.
+     * height is the height of the blocks array.
+     * nr_blocks is the number of different block sprites to be used.
+     */
     this.newGame = function(width, height, nr_blocks) {
         this.width = width;
         this.height = height;
@@ -445,7 +452,11 @@ function TaGame() {
         this.render();
     }
 
-    /* Create a new blocks array and fill it with the old shifted 1 up */
+    /* Adds a new line of blocks to the bottom of the grid and pushes the rest
+     * up. If there is not enough room a the top, the game will game-over.
+     *
+     * Returns 1 if succesfull.
+     */
     this.push = function() {
         if (this.isDanger(1)) {
             this.gameOver();
@@ -472,6 +483,8 @@ function TaGame() {
         return 1;
     }
 
+    /* Ends the current game.
+     */
     this.gameOver = function() {
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height; y++) {
@@ -486,7 +499,12 @@ function TaGame() {
         this.pushCounter = 0;
     }
 
-    /* Create a new array of blocks with one extra for spawning blocks */
+    /* Create a grid of block objects.
+     *
+     * width is the width of the grid.
+     * height is the height of the grid.
+     * returns the grid.
+     */
     this.newBlocks = function(width, height) {
         var blocks = new Array(width);
         for (var x=0; x<width; x++) {
@@ -499,6 +517,12 @@ function TaGame() {
         return blocks;
     }
 
+    /* Fills a specified portions of a block grid with random block sprites.
+     *
+     * blocks is the grid to be filled
+     * width is the width of the portion to fill
+     * height is the height of the portion to fill
+     */
     this.fillBlocks = function(blocks, width, height) {
         for (var x=0; x<width; x++) {
             for (var y=0; y<height; y++) {
@@ -507,6 +531,8 @@ function TaGame() {
         }
     }
 
+    /* Updates the neighbor references in each block in the grid.
+     */
     this.updateNeighbors = function() {
         var block;
         for (var x = 0; x<this.width; x++) {
@@ -540,6 +566,10 @@ function TaGame() {
         }
     }
 
+    /* Updates the state of the grid.
+     * Blocks are only dependent on the state of their under-neighbor, so
+     * this can be done from the bottom up.
+     */
     this.updateState = function() {
         for (var x = 0; x < this.width; x++) {
             for (var y = 0; y < this.height; y++) {
@@ -550,6 +580,12 @@ function TaGame() {
         }
     }
 
+    /* Update the combos and chain for the entire grid.
+     *
+     * Returns [combo, chain] where
+     * combo is the amount of blocks participating in the combo
+     * chain is whether a chain is currently happening.
+     */
     this.updateCnc = function() {
         var combo = 0;
         var chain = false;
@@ -566,6 +602,8 @@ function TaGame() {
         return [combo, chain];
     }
 
+    /* Swaps two blocks at location (x,y) and (x+1,y) if swapping is possible
+     */
     this.swap = function(x, y) {
         if (!this.blocks[x][y].isSwappable()
             || !this.blocks[x+1][y].isSwappable())
@@ -573,6 +611,9 @@ function TaGame() {
         this.blocks[x][y].swap();
     }
 
+    /* Checks if the current chain is over.
+     * returns a boolean
+     */
     this.chainOver = function() {
         var chain = true;
         for (var x = 0; x < this.width; x++) {
@@ -585,6 +626,10 @@ function TaGame() {
         return chain;
     }
 
+    /* Converts an amount of blocks in a combo to the corresponding score
+     * combo is an int
+     * returns a int as score
+     */
     this.comboToScore = function(combo) {
         switch(combo) {
             case 4:
@@ -610,6 +655,10 @@ function TaGame() {
         }
     }
 
+    /* Converts the lenght of a chain to the corresponding score
+     * chain is an int
+     * returns a int as score
+     */
     this.chainToScore = function(chain) {
         switch(chain) {
             case 2:
@@ -641,6 +690,11 @@ function TaGame() {
         }
     }
 
+    /* Checks if any block sprites are close to the top of the grid.
+     *
+     * height is the distance to the top.
+     * returns a boolean
+     */
     this.isDanger = function(height) {
         for (var x=0; x<this.width; x++) {
             for (var y=this.height-1; y>(this.height-1)-height; y--) {
@@ -652,6 +706,13 @@ function TaGame() {
         return false;
     }
 
+    /* The tick function is the main function of the TaGame object.
+     * It gets called every tick and executes the other internal functions.
+     * It will update the grid,
+     * calculate the current score,
+     * spawn possible garbage,
+     * updates the sprites to the correct locations in the canvas.
+     */
     this.tick = function() {
         if (this.cursor.controller.push.isDown)
             this.pushCounter -= 100;
@@ -692,6 +753,10 @@ function TaGame() {
         this.render();
     }
 
+    /* Updates the coordinates of the sprite objects to the corresponding
+     * coordinates in the grid. Then copies the entire grid to an upscaled
+     * canvas to maintain pixelart.
+     */
     this.render = function() {
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height; y++) {
