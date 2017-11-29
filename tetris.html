@@ -4,9 +4,18 @@
         <meta charset="UTF-8" />
         <title>Tetris attack JS</title>
         <link rel="stylesheet" href="style.css" />
-        <!-- Add the phaser framework -->
-        <script type="text/javascript" src="phaser.js"></script>
 
+        <!-- Add the mainloop.js framework -->
+        <script type="text/javascript" src="libs/mainloop.min.js"></script>
+        <script type="text/javascript" src="libs/keypress-2.1.4.min.js"></script>
+
+
+        <!-- Add the game files -->
+        <!--
+        <script type="text/javascript" src="global_constants.js"></script>
+        <script type="text/javascript" src="objects.js"></script>
+        <script type="text/javascript" src="tetris-attack.js"></script>
+        -->
     </head>
     <body>
 <!--
@@ -32,27 +41,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
-        <div id="phaser" style="display: none">
-        </div>
         <div id="game">
-            <h1>Tetris Attack JS</h1>
             <canvas id="tetris-canvas"></canvas>
         </div>
-        <div class="controls">
-            Controls:<br>
-            Arrow keys to move<br>
-            Space to swap<br>
-            C to push the blocks up
 
-            <br><br>
-            Find the source on <a href="https://github.com/tzwaan/tetris-attack-js/">Github</a>.
-        </div>
     </body>
-    <!-- Add the game files -->
-    <script type="text/javascript" src="libs/mainloop.min.js"></script>
-    <script type="text/javascript" src="libs/keypress-2.1.4.min.js"></script>
     <script type="text/javascript" src="global_constants.js"></script>
     <script type="text/javascript" src="draw.js"></script>
-    <script type="text/javascript" src="objects.js"></script>
-    <script type="text/javascript" src="tetris-attack.js"></script>
 </html>

@@ -141,20 +141,9 @@ function Block() {
     this.newBlock = function(sprite_nr) {
         if (sprite_nr === undefined) {
             // No block number given, so generate random block
-            sprite_nr = Math.floor(Math.random() * GLOBAL.nrBlockSprites)
+            sprite_nr = (Math.floor(Math.random() * GLOBAL.nrBlockSprites)) + 1;
         }
-        /* Check if there is no other sprite, otherwise it will stay onscreen*/
-        if (this.sprite) {
-            this.erase();
-        }
-        this.sprite = GLOBAL.game.add.sprite(0, 0, 'block'+sprite_nr, 0);
-        this.sprite.animations.add('land', [4, 2, 3, 0]);
-        this.sprite.animations.add('clear', [6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 5]);
-        this.sprite.animations.add('live', [0]);
-        this.sprite.animations.add('dead', [1]);
-        this.sprite.animations.add('danger', [0, 4, 0, 3, 2, 3]);
-        this.sprite.animations.add('face', [5]);
-        GLOBAL.block_layer.add(this.sprite);
+        this.sprite = sprite_nr
     }
 
     /* Update the current state of this block based on its own state, and the
@@ -428,9 +417,9 @@ function TaGame() {
         this.height = height;
         this.nr_blocks = nr_blocks;
         this.blocks = this.newBlocks(width, height);
-        this.fillBlocks(this.blocks, 6, 4);
-        this.nextLine = this.newBlocks(6, 1);
-        this.fillBlocks(this.nextLine, 6, 1);
+        this.fillBlocks(this.blocks, width, 4);
+        this.nextLine = this.newBlocks(width, 1);
+        this.fillBlocks(this.nextLine, width, 1);
         this.command = null; // not done
         this.cursor = new Cursor();
         this.cursor.init(this);
@@ -439,11 +428,11 @@ function TaGame() {
         this.pushCounter = this.pushTime;
 
         this.score = 0;
-        this.scoreText = GLOBAL.game.add.text(0, 0, '0', { fontSize: '10px', fill: '#fff'});
-        this.scoreText.setTextBounds(50, 0, 46, 32);
-        this.scoreText.boundsAlignH = 'right';
-        this.scoreText.align = 'right';
-        this.scoreText.lineSpacing = -7;
+        //this.scoreText = GLOBAL.game.add.text(0, 0, '0', { fontSize: '10px', fill: '#fff'});
+        //this.scoreText.setTextBounds(50, 0, 46, 32);
+        //this.scoreText.boundsAlignH = 'right';
+        //this.scoreText.align = 'right';
+        //this.scoreText.lineSpacing = -7;
 
         this.wall = new Block();
         this.wall.initWall(this);
@@ -766,20 +755,20 @@ function TaGame() {
         for (var x=0; x<this.width; x++) {
             this.nextLine[x][0].render(true)
         }
-        this.cursor.sprite.x = this.cursor.x*16 - 3;
-        this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 3;
+        //this.cursor.sprite.x = this.cursor.x*16 - 3;
+        //this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 3;
 
         var text = "" + this.score;
         if (this.chain) {
             text += "\nchain: " + (this.chain + 1);
         }
 
-        this.scoreText.text = text;
+        //this.scoreText.text = text;
 
         GLOBAL.block_layer.y = (this.pushCounter/this.pushTime) * 16;
         GLOBAL.cursor_layer.y = (this.pushCounter/this.pushTime) * 16;
 
-        PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, (GAME_HEIGHT+1)*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
+        //PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, (GAME_HEIGHT+1)*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
     }
 }
 
@@ -805,20 +794,20 @@ function Cursor() {
         this.left = game.blocks[this.x][this.y];
         this.right = game.blocks[this.x+1][this.y];
 
-        this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
-        this.sprite.animations.add('idle', [0, 1]);
-        this.sprite.animations.play('idle', Math.round(GLOBAL.game.time.desiredFps/10), true);
-        GLOBAL.cursor_layer.add(this.sprite);
+        //this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
+        //this.sprite.animations.add('idle', [0, 1]);
+        //this.sprite.animations.play('idle', Math.round(GLOBAL.game.time.desiredFps/10), true);
+        //GLOBAL.cursor_layer.add(this.sprite);
 
-        this.controller = GLOBAL.game.input.keyboard.createCursorKeys();
-        this.controller.swap = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-        this.controller.push = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.C);
+        //this.controller = GLOBAL.game.input.keyboard.createCursorKeys();
+        //this.controller.swap = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        //this.controller.push = GLOBAL.game.input.keyboard.addKey(Phaser.Keyboard.C);
 
-        this.controller.left.onDown.add(this.mv_left, this);
-        this.controller.right.onDown.add(this.mv_right, this);
-        this.controller.down.onDown.add(this.mv_down, this);
-        this.controller.up.onDown.add(this.mv_up, this);
-        this.controller.swap.onDown.add(this.mv_swap, this);
+        //this.controller.left.onDown.add(this.mv_left, this);
+        //this.controller.right.onDown.add(this.mv_right, this);
+        //this.controller.down.onDown.add(this.mv_down, this);
+        //this.controller.up.onDown.add(this.mv_up, this);
+        //this.controller.swap.onDown.add(this.mv_swap, this);
     }
 
     this.mv_left = function() {
