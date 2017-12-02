@@ -47,13 +47,15 @@ function drawGame(game, loc) {
 }
 
 function drawBlock(block) {
+    var offset = (block.game.pushCounter / PUSHTIME) * 16;
     if (block.sprite)
-        ctx.drawImage(BLOCKS.sprites[block.sprite], 0, 0, 16, 16, block.x*16, block.game.height*16 - (block.y+1)*16, 16, 16);
+        ctx.drawImage(BLOCKS.sprites[block.sprite], 0, 0, 16, 16, block.x*16, block.game.height*16 - (block.y+1)*16 + offset, 16, 16);
 }
 
 function drawCursor(cursor) {
+    var offset = (cursor.game.pushCounter / PUSHTIME) * 16;
     if (cursor.sprite)
-        ctx.drawImage(CURSORS.sprites[cursor.sprite], 0, 0, 38, 22, cursor.x*16 - 3, cursor.game.height*16 - (cursor.y+1)*16 - 3, 38, 22);
+        ctx.drawImage(CURSORS.sprites[cursor.sprite], 0, 0, 38, 22, cursor.x*16 - 3, cursor.game.height*16 - (cursor.y+1)*16 - 3 + offset, 38, 22);
 }
 
 
