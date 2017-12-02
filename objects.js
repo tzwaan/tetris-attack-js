@@ -470,6 +470,18 @@ function TaGame() {
         return 1;
     }
 
+    this.pushTick = function(count) {
+        this.pushCounter -= count;
+        if (this.pushCounter <= 0) {
+            this.pushCounter = this.pushTime;
+            this.score += this.push();
+        }
+    }
+
+    this.pushFast = function() {
+        this.pushTick(100);
+    }
+
     /* Ends the current game.
      */
     this.gameOver = function() {
@@ -706,11 +718,7 @@ function TaGame() {
             this.pushCounter -= 100;
         else
         */
-            this.pushCounter--;
-        if (this.pushCounter <= 0) {
-            this.pushCounter = this.pushTime;
-            this.score += this.push();
-        }
+        this.pushTick(1);
         this.updateNeighbors();
         this.updateState();
         // combo n chain
@@ -806,6 +814,7 @@ function Cursor() {
         this.controller.simple_combo("down", this.mv_down.bind(this));
         this.controller.simple_combo("up", this.mv_up.bind(this));
         this.controller.simple_combo("space", this.mv_swap.bind(this));
+        this.controller.simple_combo("c", this.game.pushFast.bind(this.game));
 
         //this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
         //this.sprite.animations.add('idle', [0, 1]);
