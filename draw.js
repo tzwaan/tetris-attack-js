@@ -38,14 +38,22 @@ function draw() {
 }
 
 function drawGame(game, loc) {
-    game.blocks.forEach(function(blocks){
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0, 16*GAME_WIDTH, 16*(GAME_HEIGHT+1));
+    game.blocks.forEach(function(blocks) {
         blocks.forEach(drawBlock);
     });
+    drawCursor(game.cursor);
 }
 
 function drawBlock(block) {
     if (block.sprite)
         ctx.drawImage(BLOCKS.sprites[block.sprite], 0, 0, 16, 16, block.x*16, block.game.height*16 - (block.y+1)*16, 16, 16);
+}
+
+function drawCursor(cursor) {
+    if (cursor.sprite)
+        ctx.drawImage(CURSORS.sprites[cursor.sprite], 0, 0, 38, 22, cursor.x*16 - 3, cursor.game.height*16 - (cursor.y+1)*16 - 3, 38, 22);
 }
 
 

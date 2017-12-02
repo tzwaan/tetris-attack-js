@@ -202,7 +202,7 @@ function Block() {
                     }
                 }
                 if ((this.state == STATIC || this.state == SWAP) && this.sprite) {
-                    this.sprite.animations.play('land', GLOBAL.game.time.desiredFps, false);
+                    //this.sprite.animations.play('land', GLOBAL.game.time.desiredFps, false);
                 }
                 break;
             case CLEAR:
@@ -306,8 +306,6 @@ function Block() {
      * its upper neighbour.
      */
     this.erase = function() {
-        if (this.sprite)
-            this.sprite.destroy();
         this.sprite = null;
         this.state = STATIC;
         this.counter = 0;
@@ -329,7 +327,7 @@ function Block() {
         this.counter = CLEARBLINKTIME;
         this.state = CLEAR;
 
-        this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
+        //this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
         return [1, this.chain];
     }
 
@@ -348,8 +346,8 @@ function Block() {
         }
 
         if (this.left.isComboable() && this.right.isComboable()) {
-            if (this.left.sprite.key == this.sprite.key
-                    && this.right.sprite.key == this.sprite.key) {
+            if (this.left.sprite == this.sprite
+                    && this.right.sprite == this.sprite) {
                 var middle = this.clear();
                 var left = this.left.clear();
                 var right = this.right.clear();
@@ -364,8 +362,8 @@ function Block() {
         }
 
         if (this.above.isComboable() && this.under.isComboable()) {
-            if (this.above.sprite.key == this.sprite.key
-                    && this.under.sprite.key == this.sprite.key) {
+            if (this.above.sprite == this.sprite
+                    && this.under.sprite == this.sprite) {
                 var middle = this.clear();
                 var above = this.above.clear();
                 var under = this.under.clear();
@@ -438,7 +436,7 @@ function TaGame() {
         this.wall.initWall(this);
 
         this.updateNeighbors();
-        this.render();
+        //this.render();
     }
 
     /* Adds a new line of blocks to the bottom of the grid and pushes the rest
@@ -458,13 +456,13 @@ function TaGame() {
             }
             this.blocks[x][this.height-1].erase();
             blocks[x][0] = this.nextLine[x][0];
-            blocks[x][0].sprite.animations.play('live');
+            //blocks[x][0].sprite.animations.play('live');
         }
         this.blocks = blocks;
         this.nextLine = this.newBlocks(6, 1);
         this.fillBlocks(this.nextLine, 6, 1);
         for (var x=0; x<this.width; x++) {
-            this.nextLine[x][0].sprite.animations.play('dead');
+            //this.nextLine[x][0].sprite.animations.play('dead');
         }
         if (this.cursor.y < this.height-1)
             this.cursor.y++;
@@ -478,12 +476,12 @@ function TaGame() {
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height; y++) {
                 if (this.blocks[x][y].sprite)
-                    this.blocks[x][y].sprite.animations.play('face');
+                    //this.blocks[x][y].sprite.animations.play('face');
                 this.tick = function() {
                     console.log("game over bitch");
                 }
             }
-            this.nextLine[x][0].sprite.animations.play('face');
+            //this.nextLine[x][0].sprite.animations.play('face');
         }
         this.pushCounter = 0;
     }
@@ -703,9 +701,11 @@ function TaGame() {
      * updates the sprites to the correct locations in the canvas.
      */
     this.tick = function() {
+        /*
         if (this.cursor.controller.push.isDown)
             this.pushCounter -= 100;
         else
+        */
             this.pushCounter--;
         if (this.pushCounter <= 0) {
             this.pushCounter = this.pushTime;
@@ -739,7 +739,7 @@ function TaGame() {
         // spawn garbage
 
 
-        this.render();
+        //this.render();
     }
 
     /* Updates the coordinates of the sprite objects to the corresponding
@@ -765,8 +765,8 @@ function TaGame() {
 
         //this.scoreText.text = text;
 
-        GLOBAL.block_layer.y = (this.pushCounter/this.pushTime) * 16;
-        GLOBAL.cursor_layer.y = (this.pushCounter/this.pushTime) * 16;
+        //GLOBAL.block_layer.y = (this.pushCounter/this.pushTime) * 16;
+        //GLOBAL.cursor_layer.y = (this.pushCounter/this.pushTime) * 16;
 
         //PIXELCANVAS.pixelcontext.drawImage(GLOBAL.game.canvas, 0, 0, GAME_WIDTH*16, (GAME_HEIGHT+1)*16, 0, 0, PIXELCANVAS.pixelwidth, PIXELCANVAS.pixelheight);
     }
@@ -794,6 +794,19 @@ function Cursor() {
         this.left = game.blocks[this.x][this.y];
         this.right = game.blocks[this.x+1][this.y];
 
+        // temp sprite
+        this.sprite = 1;
+
+        this.controller = new window.keypress.Listener();
+
+        var self = this;
+
+        this.controller.simple_combo("left", this.mv_left.bind(this));
+        this.controller.simple_combo("right", this.mv_right.bind(this));
+        this.controller.simple_combo("down", this.mv_down.bind(this));
+        this.controller.simple_combo("up", this.mv_up.bind(this));
+        this.controller.simple_combo("space", this.mv_swap.bind(this));
+
         //this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
         //this.sprite.animations.add('idle', [0, 1]);
         //this.sprite.animations.play('idle', Math.round(GLOBAL.game.time.desiredFps/10), true);
@@ -810,7 +823,7 @@ function Cursor() {
         //this.controller.swap.onDown.add(this.mv_swap, this);
     }
 
-    this.mv_left = function() {
+    this.mv_left = function(cursor) {
         if (this.x > 0)
             this.x--;
     }

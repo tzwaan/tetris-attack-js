@@ -15,23 +15,17 @@ function create() {
 
 
     GLOBAL.taGame_list[0] = game;
+    MainLoop.setBegin(begin).setUpdate(update).setDraw(draw).start();
 }
 function update() {
-    /*
     for (var i=0; i < GLOBAL.taGame_list.length; i++) {
         game = GLOBAL.taGame_list[i];
 
         game.tick();
-
-        game.render();
     }
-    */
 }
 
 function begin() {
 }
 
 create();
-MainLoop.setBegin(begin);
-MainLoop.setDraw(draw);
-MainLoop.start();
