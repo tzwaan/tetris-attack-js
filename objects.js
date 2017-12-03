@@ -887,26 +887,3 @@ function Cursor() {
         ctx.drawImage(CURSORS.sprites[this.sprite], 0, 0, 38, 22, this.x*16 - 3, this.game.height*16 - (this.y+1)*16 - 3 + offset, 38, 22);
     }
 }
-
-function Key() {
-    var pressed = {};
-
-    var LEFT = 37;
-    var UP = 38;
-    var RIGHT = 39;
-    var DOWN = 40;
-    var SWAP = 32;
-    var PUSH = 67;
-
-    var isDown = function(keyCode) {
-        return this._pressed[keyCode];
-    }
-
-    var onKeydown = function(event) {
-        this._pressed[event.keyCode] = true;
-    }
-
-    var onKeyup = function(event) {
-        delete this._pressed[event.keyCode];
-    }
-}
