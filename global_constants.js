@@ -2,6 +2,7 @@
 const SCALE = 3;
 const GAME_WIDTH = 6;
 const GAME_HEIGHT = 12;
+const UPS = 60;
 const BLOCKS = {
     names: [
         'block_blue',

@@ -7,16 +7,6 @@ ctx.scale(SCALE,SCALE);
 ctx.fillStyle = '#000';
 ctx.fillRect(0,0, 16*GAME_WIDTH, 16*(GAME_HEIGHT+1));
 
-/*
-var test_image = new Image();
-test_image.src = "sprites/block_grooveshark.png";
-test_image.addEventListener('load', function() {
-    for (var i=0; i<6; i++)
-        ctx.drawImage(test_image, 0, 0, 16, 16, i*16, 0, 16, 16);
-}, false);
-*/
-
-
 function loadSprites(blocks, cursors) {
     var i;
     for (i=1; i<=blocks.names.length; i++) {
@@ -33,30 +23,10 @@ function loadSprites(blocks, cursors) {
     GLOBAL.nrCursorSprites = cursors.names.length;
 }
 
-function draw() {
-    GLOBAL.taGame_list.forEach(drawGame);
-}
-
-function drawGame(game, loc) {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0,0, 16*GAME_WIDTH, 16*(GAME_HEIGHT+1));
-    game.blocks.forEach(function(blocks) {
-        blocks.forEach(drawBlock);
+function render() {
+    GLOBAL.taGame_list.forEach(function(game) {
+        game.render();
     });
-    drawCursor(game.cursor);
 }
-
-function drawBlock(block) {
-    var offset = (block.game.pushCounter / PUSHTIME) * 16;
-    if (block.sprite)
-        ctx.drawImage(BLOCKS.sprites[block.sprite], 0, 0, 16, 16, block.x*16, block.game.height*16 - (block.y+1)*16 + offset, 16, 16);
-}
-
-function drawCursor(cursor) {
-    var offset = (cursor.game.pushCounter / PUSHTIME) * 16;
-    if (cursor.sprite)
-        ctx.drawImage(CURSORS.sprites[cursor.sprite], 0, 0, 38, 22, cursor.x*16 - 3, cursor.game.height*16 - (cursor.y+1)*16 - 3 + offset, 38, 22);
-}
-
 
 loadSprites(BLOCKS, CURSORS);

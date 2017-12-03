@@ -219,38 +219,42 @@ function Block() {
      * or in the bottom line still being added.
      */
     this.render = function(nextLine) {
+        var offset = (this.game.pushCounter / this.game.pushTime) * 16;
+        //var offset = (((this.game.pushCounter > 0) ? this.game.pushCounter : 0) / this.game.pushTime) * 16;
+        var x=0, y=0;
+        var sprite_index=0;
+        if (!this.sprite)
+            return;
         if (!nextLine) {
-            if (this.sprite) {
-                this.sprite.x = this.x*16;
-                this.sprite.y = this.game.height*16 - (this.y+1)*16;
+            x = this.x*16;
+            y = this.game.height*16 - (this.y+1)*16 + offset;
 
-                if (this.animation_counter <= 0)
-                    this.animation_state = null;
-                if (this.animation_counter > 0) {
-                    this.animation_counter--;
-                }
-                switch (this.animation_state) {
-                    case ANIM_SWAP_LEFT:
-                        var step = 16/ANIM_SWAPTIME;
-                        this.sprite.x += step * this.animation_counter;
-                        break;
-                    case ANIM_SWAP_RIGHT:
-                        var step = 16/ANIM_SWAPTIME;
-                        this.sprite.x -= step * this.animation_counter;
-                        break;
-                    case ANIM_CLEAR:
-                    case ANIM_LAND:
-                        break;
-                    default:
-                }
+            if (this.animation_counter <= 0)
+                this.animation_state = null;
+            if (this.animation_counter > 0) {
+                this.animation_counter--;
+            }
+            switch (this.animation_state) {
+                case ANIM_SWAP_LEFT:
+                    var step = 16/ANIM_SWAPTIME;
+                    this.sprite.x += step * this.animation_counter;
+                    break;
+                case ANIM_SWAP_RIGHT:
+                    var step = 16/ANIM_SWAPTIME;
+                    this.sprite.x -= step * this.animation_counter;
+                    break;
+                case ANIM_CLEAR:
+                case ANIM_LAND:
+                    break;
+                default:
             }
         }
         else {
-            if (this.sprite) {
-                this.sprite.x = this.x*16;
-                this.sprite.y = this.game.height*16;
-            }
+            x = this.x*16;
+            y = this.game.height*16 + offset;
+            sprite_index = 1;
         }
+        ctx.drawImage(BLOCKS.sprites[this.sprite], sprite_index*16, 0, 16, 16, x, y, 16, 16);
     }
 
     /* This block will give its state and sprite to the block under it and then
@@ -403,6 +407,7 @@ function TaGame() {
     this.scoreText = null;
     this.pushTime = 0;
     this.pushCounter = 0;
+    this.totalTicks = 0;
 
     /* Initializes a new game.
      *
@@ -492,6 +497,7 @@ function TaGame() {
                 this.tick = function() {
                     console.log("game over bitch");
                 }
+                MainLoop.stop();
             }
             //this.nextLine[x][0].sprite.animations.play('face');
         }
@@ -713,11 +719,7 @@ function TaGame() {
      * updates the sprites to the correct locations in the canvas.
      */
     this.tick = function() {
-        /*
-        if (this.cursor.controller.push.isDown)
-            this.pushCounter -= 100;
-        else
-        */
+        this.totalTicks++;
         this.pushTick(1);
         this.updateNeighbors();
         this.updateState();
@@ -755,6 +757,7 @@ function TaGame() {
      * canvas to maintain pixelart.
      */
     this.render = function() {
+        ctx.fillRect(0,0, 16*this.width, 16*(this.height+1));
         for (var x=0; x<this.width; x++) {
             for (var y=0; y<this.height; y++) {
                 this.blocks[x][y].render();
@@ -763,6 +766,8 @@ function TaGame() {
         for (var x=0; x<this.width; x++) {
             this.nextLine[x][0].render(true)
         }
+
+        this.cursor.render();
         //this.cursor.sprite.x = this.cursor.x*16 - 3;
         //this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 3;
 
@@ -805,16 +810,35 @@ function Cursor() {
         // temp sprite
         this.sprite = 1;
 
-        this.controller = new window.keypress.Listener();
+        //this.controller = kd;
 
-        var self = this;
+        kd.LEFT.press(this.mv_left.bind(this));
+        kd.RIGHT.press(this.mv_right.bind(this));
+        kd.UP.press(this.mv_up.bind(this));
+        kd.DOWN.press(this.mv_down.bind(this));
+        kd.SPACE.press(this.mv_swap.bind(this));
+        kd.C.down(this.game.pushFast.bind(this.game));
+        var keys = [
+            kd.LEFT.keyCode,
+            kd.RIGHT.keyCode,
+            kd.UP.keyCode,
+            kd.DOWN.keyCode,
+            kd.C.keyCode,
+            kd.SPACE.keyCode]
 
+        window.addEventListener('keydown', function(e) {
+            if (keys.includes(e.keyCode)) {
+                e.preventDefault();
+            }
+        }, false);
+        /*
         this.controller.simple_combo("left", this.mv_left.bind(this));
         this.controller.simple_combo("right", this.mv_right.bind(this));
         this.controller.simple_combo("down", this.mv_down.bind(this));
         this.controller.simple_combo("up", this.mv_up.bind(this));
         this.controller.simple_combo("space", this.mv_swap.bind(this));
         this.controller.simple_combo("c", this.game.pushFast.bind(this.game));
+        */
 
         //this.sprite = GLOBAL.game.add.sprite(0, 0, 'cursor0', 0);
         //this.sprite.animations.add('idle', [0, 1]);
@@ -856,5 +880,33 @@ function Cursor() {
 
     this.mv_swap = function() {
         this.game.swap(this.x, this.y);
+    }
+
+    this.render = function() {
+        var offset = (((this.game.pushCounter > 0) ? this.game.pushCounter : 0) / this.game.pushTime) * 16;
+        ctx.drawImage(CURSORS.sprites[this.sprite], 0, 0, 38, 22, this.x*16 - 3, this.game.height*16 - (this.y+1)*16 - 3 + offset, 38, 22);
+    }
+}
+
+function Key() {
+    var pressed = {};
+
+    var LEFT = 37;
+    var UP = 38;
+    var RIGHT = 39;
+    var DOWN = 40;
+    var SWAP = 32;
+    var PUSH = 67;
+
+    var isDown = function(keyCode) {
+        return this._pressed[keyCode];
+    }
+
+    var onKeydown = function(event) {
+        this._pressed[event.keyCode] = true;
+    }
+
+    var onKeyup = function(event) {
+        delete this._pressed[event.keyCode];
     }
 }
