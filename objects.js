@@ -9,7 +9,8 @@ const CLEAR = 4
 const ANIM_SWAP_LEFT = 0;
 const ANIM_SWAP_RIGHT = 1;
 const ANIM_LAND = 2;
-const ANIM_CLEAR = 4;
+const ANIM_CLEAR = 3;
+const ANIM_CLEAR_FACE = 4;
 
 /* Timing */
 const HANGTIME = 11;
@@ -21,8 +22,9 @@ const CLEAREXPLODETIME = 9;
 const PUSHTIME = 1000;
 /* Animation timing */
 const ANIM_SWAPTIME = 4;
-const ANIM_LANDTIME = 0;
+const ANIM_LANDTIME = 4;
 const ANIM_CLEARBLINKTIME = 15;
+const ANIM_CLEARFACETIME = 29
 const ANIM_DANGERTIME = 6;
 
 /* The block object.
@@ -153,6 +155,15 @@ function Block() {
      */
     this.updateState = function() {
         /* If the block has a counter, decrement it, return if it is not done*/
+        if (this.animation_counter > 0)
+            this.animation_counter--;
+        if (this.animation_counter <= 0) {
+            if (this.animation_state == ANIM_CLEAR) {
+                this.animation_state = ANIM_CLEAR_FACE;
+                this.animation_counter = ANIM_CLEARFACETIME;
+            } else
+                this.animation_state = null;
+        }
         if (this.counter > 0) {
             this.counter--;
             if (this.counter > 0)
@@ -202,6 +213,8 @@ function Block() {
                     }
                 }
                 if ((this.state == STATIC || this.state == SWAP) && this.sprite) {
+                    this.animation_state = ANIM_LAND;
+                    this.animation_counter = BLOCKS.animations.land.length;
                     //this.sprite.animations.play('land', GLOBAL.game.time.desiredFps, false);
                 }
                 break;
@@ -219,39 +232,50 @@ function Block() {
      * or in the bottom line still being added.
      */
     this.render = function(nextLine) {
-        var offset = (this.game.pushCounter / this.game.pushTime) * 16;
-        //var offset = (((this.game.pushCounter > 0) ? this.game.pushCounter : 0) / this.game.pushTime) * 16;
+        //var offset_y = (this.game.pushCounter / this.game.pushTime) * 16;
+        var offset_y = (((this.game.pushCounter > 0) ? this.game.pushCounter : 0) / this.game.pushTime) * 16;
+        var offset_x = 0;
         var x=0, y=0;
         var sprite_index=0;
         if (!this.sprite)
             return;
         if (!nextLine) {
             x = this.x*16;
-            y = this.game.height*16 - (this.y+1)*16 + offset;
+            y = this.game.height*16 - (this.y+1)*16 + offset_y;
 
-            if (this.animation_counter <= 0)
-                this.animation_state = null;
-            if (this.animation_counter > 0) {
-                this.animation_counter--;
-            }
             switch (this.animation_state) {
                 case ANIM_SWAP_LEFT:
                     var step = 16/ANIM_SWAPTIME;
-                    this.sprite.x += step * this.animation_counter;
+                    x += step * this.animation_counter;
                     break;
                 case ANIM_SWAP_RIGHT:
                     var step = 16/ANIM_SWAPTIME;
-                    this.sprite.x -= step * this.animation_counter;
+                    x -= step * this.animation_counter;
                     break;
                 case ANIM_CLEAR:
+                    var frames = BLOCKS.animations.clear;
+                    sprite_index = frames[frames.length - this.animation_counter];
+                    break;
+                case ANIM_CLEAR_FACE:
+                    var frames = BLOCKS.animations.face;
+                    sprite_index = frames[0];
+                    break;
                 case ANIM_LAND:
+                    var frames = BLOCKS.animations.land;
+                    sprite_index = frames[frames.length - this.animation_counter];
                     break;
                 default:
+                    if (this.game.isDanger(3)) {
+                        var frames = BLOCKS.animations.danger;
+                        sprite_index = frames[Math.round(this.game.totalTicks/4) % frames.length];
+                        break;
+                    }
+
             }
         }
         else {
             x = this.x*16;
-            y = this.game.height*16 + offset;
+            y = this.game.height*16 + offset_y;
             sprite_index = 1;
         }
         ctx.drawImage(BLOCKS.sprites[this.sprite], sprite_index*16, 0, 16, 16, x, y, 16, 16);
@@ -330,6 +354,9 @@ function Block() {
 
         this.counter = CLEARBLINKTIME;
         this.state = CLEAR;
+        this.animation_state = ANIM_CLEAR;
+        this.animation_counter = ANIM_CLEARBLINKTIME;
+
 
         //this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
         return [1, this.chain];
@@ -476,6 +503,8 @@ function TaGame() {
     }
 
     this.pushTick = function(count) {
+        if (this.chain)
+            return;
         this.pushCounter -= count;
         if (this.pushCounter <= 0) {
             this.pushCounter = this.pushTime;
@@ -719,6 +748,7 @@ function TaGame() {
      * updates the sprites to the correct locations in the canvas.
      */
     this.tick = function() {
+        kd.tick();
         this.totalTicks++;
         this.pushTick(1);
         this.updateNeighbors();
@@ -729,6 +759,22 @@ function TaGame() {
             if (this.chainOver()) {
                 console.log("chain over");
                 this.chain = 0;
+            }
+        }
+
+        if (cnc[0] > 0) {
+            var current = 0;
+            for (var y=0; y<this.height; y++) {
+                for (var x=0; x<this.width; x++) {
+                    if (this.blocks[x][y].state == CLEAR) {
+                        this.blocks[x][y].counter = CLEAREXPLODETIME*cnc[0] + CLEARBLINKTIME + CLEARPAUSETIME;
+                        current++;
+                    }
+                    if (current == cnc[0])
+                        break;
+                }
+                if (current == cnc[0])
+                    break;
             }
         }
 

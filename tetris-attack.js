@@ -16,7 +16,7 @@ function create() {
 
     GLOBAL.taGame_list[0] = game;
     MainLoop.setSimulationTimestep(1000/UPS);
-    MainLoop.setBegin(kd.tick).setUpdate(update).setDraw(render).start();
+    MainLoop.setBegin(begin).setUpdate(update).setDraw(render).start();
 }
 function update() {
     for (var i=0; i < GLOBAL.taGame_list.length; i++) {
