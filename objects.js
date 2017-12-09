@@ -942,7 +942,9 @@ function Cursor() {
     }
 
     this.render = function() {
+        var frames = CURSORS.animations.idle;
+        sprite_index = frames[Math.round(this.game.totalTicks / 10) % frames.length];
         var offset = (((this.game.pushCounter > 0) ? this.game.pushCounter : 0) / this.game.pushTime) * 16;
-        ctx.drawImage(CURSORS.sprites[this.sprite], 0, 0, 38, 22, this.x*16 - 3, this.game.height*16 - (this.y+1)*16 - 3 + offset, 38, 22);
+        ctx.drawImage(CURSORS.sprites[this.sprite], sprite_index*38, 0, 38, 22, this.x*16 - 3, this.game.height*16 - (this.y+1)*16 - 3 + offset, 38, 22);
     }
 }

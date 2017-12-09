@@ -28,7 +28,10 @@ const CURSORS = {
         'cursor'
     ],
     sprites: [
-    ]
+    ],
+    animations: {
+        idle: [0, 1]
+    }
 }
 const GLOBAL = {game: null,
                 nrBlockSprites: 0,
