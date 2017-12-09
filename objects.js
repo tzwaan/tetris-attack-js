@@ -357,6 +357,10 @@ function Block() {
         this.animation_state = ANIM_CLEAR;
         this.animation_counter = ANIM_CLEARBLINKTIME;
 
+        if (!this.game.combo.includes(this)) {
+            this.game.combo.push(this);
+        }
+
 
         //this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
         return [1, this.chain];
@@ -454,6 +458,7 @@ function TaGame() {
         this.cursor = new Cursor();
         this.cursor.init(this);
         this.chain = 0;
+        this.combo = [];
         this.pushTime = PUSHTIME;
         this.pushCounter = this.pushTime;
 
@@ -744,8 +749,7 @@ function TaGame() {
      * It gets called every tick and executes the other internal functions.
      * It will update the grid,
      * calculate the current score,
-     * spawn possible garbage,
-     * updates the sprites to the correct locations in the canvas.
+     * spawn possible garbage.
      */
     this.tick = function() {
         kd.tick();
@@ -794,8 +798,6 @@ function TaGame() {
         }
         // spawn garbage
 
-
-        //this.render();
     }
 
     /* Updates the coordinates of the sprite objects to the corresponding
