@@ -9,8 +9,9 @@ const CLEAR = 4
 const ANIM_SWAP_LEFT = 0;
 const ANIM_SWAP_RIGHT = 1;
 const ANIM_LAND = 2;
-const ANIM_CLEAR = 3;
+const ANIM_CLEAR_BLINK = 3;
 const ANIM_CLEAR_FACE = 4;
+const ANIM_CLEAR_DEAD = 5;
 
 /* Timing */
 const HANGTIME = 11;
@@ -44,6 +45,7 @@ function Block() {
     this.counter = 0;
     this.animation_state = null;
     this.animation_counter = 0;
+    this.explode_counter = 0;
     this.chain = null;
     this.sprite = null;
 
@@ -113,7 +115,7 @@ function Block() {
                     || this.game.wall == this);
     }
 
-    /* Whether this block can currently be cleared. It should not be busy and
+    /* Whether this block can currently becombo cleared. It should not be busy and
      * should be supported.
      * returns a boolean
      */
@@ -128,9 +130,7 @@ function Block() {
      * returns a boolean
      */
     this.isComboable = function() {
-        return this.isClearable()
-            || (this.state == CLEAR
-                && this.counter == CLEARBLINKTIME)
+        return this.isClearable();
     }
 
     /* Make this block a new block.
@@ -158,9 +158,14 @@ function Block() {
         if (this.animation_counter > 0)
             this.animation_counter--;
         if (this.animation_counter <= 0) {
-            if (this.animation_state == ANIM_CLEAR) {
+            if (this.animation_state == ANIM_CLEAR_BLINK) {
                 this.animation_state = ANIM_CLEAR_FACE;
                 this.animation_counter = ANIM_CLEARFACETIME;
+            } else if (this.explode_counter > 0) {
+                this.explode_counter--;
+                if (this.explode_counter == 0)
+                    this.animation_state = ANIM_CLEAR_DEAD;
+            } else if (this.animation_state == ANIM_CLEAR_DEAD) {
             } else
                 this.animation_state = null;
         }
@@ -252,7 +257,7 @@ function Block() {
                     var step = 16/ANIM_SWAPTIME;
                     x -= step * this.animation_counter;
                     break;
-                case ANIM_CLEAR:
+                case ANIM_CLEAR_BLINK:
                     var frames = BLOCKS.animations.clear;
                     sprite_index = frames[frames.length - this.animation_counter];
                     break;
@@ -260,6 +265,8 @@ function Block() {
                     var frames = BLOCKS.animations.face;
                     sprite_index = frames[0];
                     break;
+                case ANIM_CLEAR_DEAD:
+                    return;
                 case ANIM_LAND:
                     var frames = BLOCKS.animations.land;
                     sprite_index = frames[frames.length - this.animation_counter];
@@ -344,75 +351,56 @@ function Block() {
 
     /* Sets this blocks state to CLEAR.
      *
-     * returns [combo, chain] where
-     * combo is an int represeting the nr of blocks that are set to clear.
+     * returns chain where
      * chain is a boolean telling if this block is part of a chain.
      */
     this.clear = function() {
-        if (this.state == CLEAR)
-            return [0, this.chain];
-
-        this.counter = CLEARBLINKTIME;
-        this.state = CLEAR;
-        this.animation_state = ANIM_CLEAR;
-        this.animation_counter = ANIM_CLEARBLINKTIME;
-
         if (!this.game.combo.includes(this)) {
             this.game.combo.push(this);
         }
 
-
-        //this.sprite.animations.play('clear', GLOBAL.game.time.desiredFps, false);
-        return [1, this.chain];
+        return this.chain;
     }
 
     /* Combos and Chains the current block with its neighbours.
      *
-     * returns [combo, chain] where
-     * combo is an int represeting the nr of blocks participating in the combo.
+     * Sets the relevant blocks to clear and returns chain where
      * chain is a boolean telling if this combo is part of a chain.
      */
     this.cnc = function() {
-        var combo = 0;
         var chain = false;
 
-        if (!this.isComboable()) {
-            return [combo, chain];
+        if (!this.isClearable()) {
+            return false;
         }
 
-        if (this.left.isComboable() && this.right.isComboable()) {
+        if (this.left.isClearable() && this.right.isClearable()) {
             if (this.left.sprite == this.sprite
                     && this.right.sprite == this.sprite) {
-                var middle = this.clear();
                 var left = this.left.clear();
+                var middle = this.clear();
                 var right = this.right.clear();
-                combo += middle[0];
-                combo += left[0];
-                combo += right[0];
 
-                if (middle[1] || left[1] || right[1]) {
+                if (middle || left || right) {
                     chain = true;
                 }
             }
         }
 
-        if (this.above.isComboable() && this.under.isComboable()) {
+        if (this.above.isClearable() && this.under.isClearable()) {
             if (this.above.sprite == this.sprite
                     && this.under.sprite == this.sprite) {
-                var middle = this.clear();
                 var above = this.above.clear();
+                var middle = this.clear();
                 var under = this.under.clear();
-                combo += middle[0];
-                combo += above[0];
-                combo += under[0];
 
-                if (middle[1] || above[1] || under[1]) {
+                if (middle || above || under) {
                     chain = true;
                 }
             }
         }
 
-        return [combo, chain];
+        return chain;
     }
 }
 
@@ -626,18 +614,28 @@ function TaGame() {
      * chain is whether a chain is currently happening.
      */
     this.updateCnc = function() {
-        var combo = 0;
+        var combo;
+        var current = 0;
         var chain = false;
 
         for (var x = 0; x < this.width; x++) {
             for (var y = 0; y < this.height; y++) {
-                cnc = this.blocks[x][y].cnc();
-                combo += cnc[0];
-                if (cnc[1]) {
+                if(this.blocks[x][y].cnc())
                     chain = true;
-                }
             }
         }
+
+        combo = this.combo.length;
+        while((block = this.combo.pop()) != undefined) {
+            block.state = CLEAR;
+            block.counter = CLEAREXPLODETIME * combo + CLEARBLINKTIME + CLEARPAUSETIME;
+            block.animation_state = ANIM_CLEAR_BLINK;
+            block.animation_counter = ANIM_CLEARBLINKTIME;
+            block.explode_counter = (combo - current) * CLEAREXPLODETIME;
+            current++;
+        }
+
+
         return [combo, chain];
     }
 
