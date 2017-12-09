@@ -48,6 +48,7 @@ function Block() {
     this.explode_counter = 0;
     this.chain = null;
     this.sprite = null;
+    this.garbage = null;
 
     /* Initialise this block.
      *
@@ -481,14 +482,10 @@ function TaGame() {
             }
             this.blocks[x][this.height-1].erase();
             blocks[x][0] = this.nextLine[x][0];
-            //blocks[x][0].sprite.animations.play('live');
         }
         this.blocks = blocks;
         this.nextLine = this.newBlocks(6, 1);
         this.fillBlocks(this.nextLine, 6, 1);
-        for (var x=0; x<this.width; x++) {
-            //this.nextLine[x][0].sprite.animations.play('dead');
-        }
         if (this.cursor.y < this.height-1)
             this.cursor.y++;
 
