@@ -17,15 +17,15 @@ const ANIM_CLEAR_DEAD = 5;
 const HANGTIME = 11;
 const FALLTIME = 4;
 const SWAPTIME = 4;
-const CLEARBLINKTIME = 44;
-const CLEARPAUSETIME = 23;
-const CLEAREXPLODETIME = 9;
+const CLEARBLINKTIME = 38;
+const CLEARPAUSETIME = 20;
+const CLEAREXPLODETIME = 8;
 const PUSHTIME = 1000;
 /* Animation timing */
 const ANIM_SWAPTIME = 4;
 const ANIM_LANDTIME = 4;
-const ANIM_CLEARBLINKTIME = 15;
-const ANIM_CLEARFACETIME = 29
+const ANIM_CLEARBLINKTIME = 38;
+const ANIM_CLEARFACETIME = 20
 const ANIM_DANGERTIME = 6;
 
 /* The block object.
@@ -260,7 +260,7 @@ function Block() {
                     break;
                 case ANIM_CLEAR_BLINK:
                     var frames = BLOCKS.animations.clear;
-                    sprite_index = frames[frames.length - this.animation_counter];
+                    sprite_index = frames[this.animation_counter % frames.length];
                     break;
                 case ANIM_CLEAR_FACE:
                     var frames = BLOCKS.animations.face;
@@ -273,9 +273,9 @@ function Block() {
                     sprite_index = frames[frames.length - this.animation_counter];
                     break;
                 default:
-                    if (this.game.isDanger(3)) {
+                    if (this.isDanger(2)) {
                         var frames = BLOCKS.animations.danger;
-                        sprite_index = frames[Math.round(this.game.totalTicks/4) % frames.length];
+                        sprite_index = frames[Math.round(this.game.totalTicks) % frames.length];
                         break;
                     }
 
@@ -402,6 +402,16 @@ function Block() {
         }
 
         return chain;
+    }
+
+    this.isDanger = function(height) {
+        if (!height)
+            height = 2;
+        for (var y=this.game.height-1; y>(this.game.height-1)-height; y--) {
+            if (this.game.blocks[this.x][y].sprite) {
+                return true;
+            }
+        }
     }
 }
 
