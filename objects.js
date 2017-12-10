@@ -126,14 +126,6 @@ function Block() {
             && this.sprite != null;
     }
 
-    /* Whether this block can currently participate in a combo. It should be
-     * clearable or already been cleared during this state update.
-     * returns a boolean
-     */
-    this.isComboable = function() {
-        return this.isClearable();
-    }
-
     /* Make this block a new block.
      * Adds a sprite to the block, and animations to the sprite. Will
      * overwrite any sprite already present.
@@ -622,7 +614,6 @@ function TaGame() {
      */
     this.updateCnc = function() {
         var combo;
-        var current = 0;
         var chain = false;
 
         for (var x = 0; x < this.width; x++) {
@@ -651,8 +642,7 @@ function TaGame() {
             block.counter = CLEAREXPLODETIME * combo + CLEARBLINKTIME + CLEARPAUSETIME;
             block.animation_state = ANIM_CLEAR_BLINK;
             block.animation_counter = ANIM_CLEARBLINKTIME;
-            block.explode_counter = (combo - current) * CLEAREXPLODETIME;
-            current++;
+            block.explode_counter = (this.combo.length+1) * CLEAREXPLODETIME;
         }
 
 
