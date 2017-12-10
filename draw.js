@@ -5,6 +5,7 @@ var ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 ctx.scale(SCALE,SCALE);
 ctx.fillStyle = '#000';
+ctx.font = '12px arial';
 ctx.fillRect(0,0, 16*GAME_WIDTH, 16*(GAME_HEIGHT+1));
 
 function loadSprites(blocks, cursors) {

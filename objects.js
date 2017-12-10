@@ -824,13 +824,17 @@ function TaGame() {
         }
 
         this.cursor.render();
-        //this.cursor.sprite.x = this.cursor.x*16 - 3;
-        //this.cursor.sprite.y = this.height*16 - (this.cursor.y+1)*16 - 3;
 
-        var text = "" + this.score;
+        var score = "" + this.score;
+        var chain = "";
         if (this.chain) {
-            text += "\nchain: " + (this.chain + 1);
+            chain += "chain: " + (this.chain + 1);
         }
+
+        ctx.fillStyle = '#FFF';
+        ctx.fillText(score, GAME_WIDTH*16 - ctx.measureText(score).width, 10);
+        ctx.fillText(chain, GAME_WIDTH*16 - ctx.measureText(chain).width, 20);
+        ctx.fillStyle = '#000';
 
         //this.scoreText.text = text;
 
